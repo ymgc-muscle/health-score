@@ -1,0 +1,13 @@
+{
+  "name": "Health Score",
+  "short_name": "Health Score",
+  "description": "毎日の食事・運動・体重を100点で振り返る個人用ヘルスチェックアプリ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f7",
+  "theme_color": "#ff6a00",
+  "lang": "ja-JP",
+  "orientation": "portrait-primary",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
