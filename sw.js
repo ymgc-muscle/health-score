@@ -1,6 +1,6 @@
 // Health Score PWA v0.6.0
-const CACHE='health-score-v0.6.0';
-const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./app.js?v=050','./enhancements-v060.js?v=060','./manifest.webmanifest','./icon.svg?v=3'];
+const CACHE='health-score-v0.6.0-r1';
+const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./manifest.webmanifest','./icon.svg?v=3'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
