@@ -92,6 +92,10 @@ details{border-top:1px solid var(--line);padding:10px 0}
 details:first-of-type{border-top:0}
 summary{font-weight:850;cursor:pointer}
 .version{text-align:center;color:var(--mut);font-size:11px;margin:10px 0}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.field label{display:block;font-size:11px;color:var(--mut);margin-bottom:5px}
+.field input{width:100%}
+@media(max-width:430px){.settings-grid{grid-template-columns:1fr}}
 @media(max-width:430px){
   .card{border-radius:14px;padding:13px}
   .live-score{top:53px}
@@ -123,7 +127,7 @@ summary{font-weight:850;cursor:pointer}
   </div>
   <div class="card">
     <div class="rowhead">
-      <div><div class="sub">9/17の目標</div><div style="font-size:23px;font-weight:850">74.0〜74.5 kg</div></div>
+      <div><div class="sub" id="goalLabel">目標</div><div id="goalValue" style="font-size:23px;font-weight:850">-- kg</div></div>
       <div><div class="sub">あと</div><div id="remain" style="font-size:28px;font-weight:850;color:var(--o)">--</div></div>
     </div>
     <div class="meter"><i id="prog" style="width:0"></i></div>
@@ -159,24 +163,46 @@ summary{font-weight:850;cursor:pointer}
   <div class="card">
     <div class="cal-head"><button id="prevMonth" type="button">‹</button><div class="cal-title" id="calTitle"></div><button id="nextMonth" type="button">›</button></div>
     <div class="calendar" id="cal"></div>
-    <div class="cal-legend"><span><i class="dot" style="background:#dff6e9"></i>85〜100</span><span><i class="dot" style="background:#fff2c8"></i>70〜84</span><span><i class="dot" style="background:#ffe3c6"></i>55〜69</span><span><i class="dot" style="background:#ffe0dd"></i>0〜54</span></div>
+    <div class="cal-legend">
+      <span><i class="dot" style="background:#dff6e9"></i>85〜100</span>
+      <span><i class="dot" style="background:#fff2c8"></i>70〜84</span>
+      <span><i class="dot" style="background:#ffe3c6"></i>55〜69</span>
+      <span><i class="dot" style="background:#ffe0dd"></i>0〜54</span>
+    </div>
     <div class="cal-stats"><div class="statbox"><span class="sub">今月の記録日</span><b id="monthDays">0</b></div><div class="statbox"><span class="sub">記録日の平均</span><b id="monthAvg">--</b></div></div>
     <div class="help" style="margin-top:10px">日付をタップすると、その日の入力画面を開けます。</div>
   </div>
 </section>
-<section id="chart" class="view"><div class="card"><div class="title">体重の推移</div><div class="chart" id="chartbox"></div><div class="help">オレンジ＝実測、緑＝7日平均、破線＝8/12の77.6kgから9/17の74.0kgへ向かう目標ライン。日々の上下より傾向を見ます。</div></div></section>
+<section id="chart" class="view">
+  <div class="card">
+    <div class="title">体重の推移</div>
+    <div class="chart" id="chartbox"></div>
+    <div class="help" id="chartHelp">オレンジ＝実測、緑＝7日平均、破線＝開始体重から目標体重へ向かう目標ライン。日々の上下より傾向を見ます。</div>
+  </div>
+</section>
 <section id="settings" class="view">
+  <div class="card">
+    <div class="title">体重目標・期間</div>
+    <div class="help">体重グラフの開始点と目標ラインを設定します。変更しても、これまでの記録データは消えません。</div>
+    <div class="settings-grid">
+      <div class="field"><label for="setStartDate">開始日</label><input type="date" id="setStartDate"></div>
+      <div class="field"><label for="setStartWeight">開始体重 (kg)</label><input type="number" id="setStartWeight" step="0.1" min="20" max="300"></div>
+      <div class="field"><label for="setGoalDate">目標日</label><input type="date" id="setGoalDate"></div>
+      <div class="field"><label for="setGoalWeight">目標体重 (kg)</label><input type="number" id="setGoalWeight" step="0.1" min="20" max="300"></div>
+    </div>
+    <button class="btn" id="savePlan" type="button" style="margin-top:12px">目標設定を保存</button>
+  </div>
   <div class="card"><div class="title">評価基準</div><div class="help" id="allCriteria"></div></div>
   <div class="card"><div class="title">週間サマリー</div><div id="weekly"></div></div>
   <div class="card"><button class="btn2" id="export">バックアップを書き出す</button><label class="btn2" style="display:block;text-align:center;margin-top:8px">バックアップを読み込む<input type="file" id="import" accept="application/json" style="display:none"></label></div>
-  <div class="version">Health Score v0.2.0</div>
+  <div class="version">Health Score v0.3.0</div>
 </section>
 </main>
 <nav><button class="on" data-v="home"><b>⌂</b>ホーム</button><button data-v="input"><b>✎</b>入力</button><button data-v="calendar"><b>▦</b>カレンダー</button><button data-v="chart"><b>⌁</b>グラフ</button><button data-v="settings"><b>⚙</b>設定</button></nav>
 <div id="toast" class="toast"></div>
 <script>
 const KEY='health-score-v1';
-const START='2026-08-12',GOAL='2026-09-17',STARTW=77.6,GOALW=74.0;
+const DEFAULT_SETTINGS={startDate:'2026-08-12',startWeight:77.6,goalDate:'2026-09-17',goalWeight:74.0};
 const cfg={
   breakfast:{t:'朝食',m:10,s:{g:10,y:7,r:0},c:'<span class="cg"><b>◎ 10点</b>：オートミールまたはヨーグルト＋果物を軸に、プロテイン等でたんぱく質も確保。量も適正。</span><br><span class="cy"><b>○ 7点</b>：概ね適正だが、たんぱく質不足・甘い飲み物・量がやや多い。</span><br><span class="cr"><b>× 0点</b>：菓子パン中心、明らかな食べ過ぎなど。</span>'},
   lunch:{t:'昼食',m:20,s:{g:20,y:12,r:0},c:'<span class="cg"><b>◎ 20点</b>：焼魚・鶏・肉などの定食。ご飯も適量。</span><br><span class="cy"><b>○ 12点</b>：ラーメン単品、カレー単品など。ベストではないが追加食なし。</span><br><span class="cr"><b>× 0点</b>：ラーメン＋炒飯/ライス、カツカレー大盛りなど。</span>'},
@@ -185,10 +211,15 @@ const cfg={
   protein:{t:'たんぱく質',m:10,s:{g:10,y:7,r:0},c:'<span class="cg"><b>◎ 10点</b>：1日を通して十分に確保（目安90〜110g）。</span><br><span class="cy"><b>○ 7点</b>：ある程度摂れたが不足気味。</span><br><span class="cr"><b>× 0点</b>：明らかに不足。</span>'}
 };
 let st=JSON.parse(localStorage.getItem(KEY)||'null')||{entries:{}};
+st.entries=st.entries||{};
+st.settings={...DEFAULT_SETTINGS,...(st.settings||{})};
 const $=x=>document.getElementById(x);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const ent=d=>st.entries[d]||{};
 const saveState=()=>localStorage.setItem(KEY,JSON.stringify(st));
+const plan=()=>st.settings;
+const fmtShort=d=>{const [y,m,day]=d.split('-');return `${Number(m)}/${Number(day)}`};
+const fmtJP=d=>{const [y,m,day]=d.split('-');return `${Number(m)}/${Number(day)}`};
 const lab=v=>v==='g'?'◎':v==='y'?'○':v==='r'?'×':'未入力';
 function points(e){if(!e)return 0;let got=0;if(e.weight!=null&&e.weight!=='')got+=5;for(const[k,c]of Object.entries(cfg))if(e[k])got+=c.s[e[k]]||0;if(e.steps!=null&&e.steps!==''){const s=+e.steps;got+=s>=10000?10:s>=8000?8:s>=6000?5:0}if(e.hiit)got+=e.hiit==='missed'?0:5;return Math.max(0,Math.min(100,Math.round(got)))}
 function earnedFor(k,e){if(k==='weight')return e.weight!=null?5:0;if(k==='steps'){if(e.steps==null)return 0;const s=+e.steps;return s>=10000?10:s>=8000?8:s>=6000?5:0}if(k==='hiit')return e.hiit?(e.hiit==='missed'?0:5):0;return e[k]?cfg[k].s[e[k]]:0}
@@ -202,21 +233,70 @@ function preview(){$('liveScore').textContent=points(collectForm())}
 document.addEventListener('click',ev=>{const acc=ev.target.closest('.acc-head');if(acc){acc.closest('.ratecard').classList.toggle('open');return}const b=ev.target.closest('.seg button');if(b){const s=b.parentElement;s.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');preview()}const d=ev.target.closest('.day[data-date]');if(d){$('date').value=d.dataset.date;fill();goto('input')}});
 $('weight').addEventListener('input',preview);$('steps').addEventListener('input',preview);$('date').onchange=fill;fill();
 $('save').onclick=()=>{const d=$('date').value;st.entries[d]=collectForm();saveState();render();toast('保存しました：'+points(st.entries[d])+'点')};
-function renderHome(){const e=ent(today()),sc=points(e);$('score').textContent=sc;let meta=sc===0?['ここからスタート','#777']:sc>=85?['Green','#19a65b']:sc>=70?['Yellow','#d99900']:sc>=55?['Orange','#ef7d00']:['積み上げ中','#df493d'];$('judge').textContent=meta[0];$('judge').style.color=meta[1];$('weightNow').textContent=e.weight??'--';$('stepsNow').textContent=e.steps!=null?Number(e.steps).toLocaleString():'--';const w=+e.weight;if(Number.isFinite(w)){$('remain').textContent=Math.max(0,w-GOALW).toFixed(1)+' kg';$('prog').style.width=Math.max(0,Math.min(100,(STARTW-w)/(STARTW-GOALW)*100))+'%'}else{$('remain').textContent='--';$('prog').style.width='0%'}const keys=[['weight','朝の体重測定'],...Object.entries(cfg).map(([k,c])=>[k,c.t]),['steps','歩数'],['hiit','HIIT']];$('todayRows').innerHTML=keys.map(([k,t])=>{let stxt='未入力';if(k==='weight'&&e.weight!=null)stxt='◎';else if(k==='steps'&&e.steps!=null)stxt=e.steps>=10000?'◎':e.steps>=8000?'○':e.steps>=6000?'△':'×';else if(k==='hiit'&&e.hiit)stxt=e.hiit==='missed'?'×':e.hiit==='rest'?'休養':'◎';else if(cfg[k]&&e[k])stxt=lab(e[k]);return `<div class="row"><div class="rowhead"><span class="title">${t}</span><span><b>${stxt}</b>　${earnedFor(k,e)}/${maxFor(k)}点</span></div></div>`}).join('')}
+function renderHome(){
+  const e=ent(today()),sc=points(e),p=plan();
+  $('score').textContent=sc;
+  let meta=sc===0?['ここからスタート','#777']:sc>=85?['Green','#19a65b']:sc>=70?['Yellow','#d99900']:sc>=55?['Orange','#ef7d00']:['積み上げ中','#df493d'];
+  $('judge').textContent=meta[0];$('judge').style.color=meta[1];
+  $('weightNow').textContent=e.weight??'--';
+  $('stepsNow').textContent=e.steps!=null?Number(e.steps).toLocaleString():'--';
+  $('goalLabel').textContent=fmtJP(p.goalDate)+'の目標';
+  $('goalValue').textContent=Number(p.goalWeight).toFixed(1)+' kg';
+  const w=+e.weight,sw=+p.startWeight,gw=+p.goalWeight;
+  if(Number.isFinite(w)&&Number.isFinite(sw)&&Number.isFinite(gw)&&sw!==gw){
+    $('remain').textContent=Math.abs(w-gw).toFixed(1)+' kg';
+    $('prog').style.width=Math.max(0,Math.min(100,(sw-w)/(sw-gw)*100))+'%';
+  }else{$('remain').textContent='--';$('prog').style.width='0%'}
+  const keys=[['weight','朝の体重測定'],...Object.entries(cfg).map(([k,c])=>[k,c.t]),['steps','歩数'],['hiit','HIIT']];
+  $('todayRows').innerHTML=keys.map(([k,t])=>{
+    let stxt='未入力';
+    if(k==='weight'&&e.weight!=null)stxt='◎';
+    else if(k==='steps'&&e.steps!=null)stxt=e.steps>=10000?'◎':e.steps>=8000?'○':e.steps>=6000?'△':'×';
+    else if(k==='hiit'&&e.hiit)stxt=e.hiit==='missed'?'×':e.hiit==='rest'?'休養':'◎';
+    else if(cfg[k]&&e[k])stxt=lab(e[k]);
+    return `<div class="row"><div class="rowhead"><span class="title">${t}</span><span><b>${stxt}</b>　${earnedFor(k,e)}/${maxFor(k)}点</span></div></div>`;
+  }).join('');
+}
 let calMonth=new Date(today()+'T00:00:00');
 function fmtDate(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
 function renderCalendar(){const y=calMonth.getFullYear(),m=calMonth.getMonth();$('calTitle').textContent=`${y}年 ${m+1}月`;const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let h=['日','月','火','水','木','金','土'].map(x=>`<div class="dow">${x}</div>`).join('');for(let i=0;i<first;i++)h+='<div class="day empty"></div>';const vals=[];for(let d=1;d<=days;d++){const ds=fmtDate(y,m,d),has=Object.prototype.hasOwnProperty.call(st.entries,ds),sc=has?points(st.entries[ds]):null;if(has)vals.push(sc);h+=`<button class="day ${has?statusClass(sc):''} ${ds===today()?'today':''}" type="button" data-date="${ds}"><span class="num">${d}</span>${has?`<span class="cscore">${sc}</span>`:''}</button>`}$('cal').innerHTML=h;$('monthDays').textContent=vals.length+'日';$('monthAvg').textContent=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length)+'点':'--'}
 $('prevMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCalendar()};$('nextMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCalendar()};
-function chart(){const actual=Object.entries(st.entries).map(([d,e])=>({d,w:+e.weight})).filter(x=>Number.isFinite(x.w)).sort((a,b)=>a.d.localeCompare(b.d));const box=$('chartbox');if(!actual.length){box.innerHTML='<div class="sub" style="padding:70px 10px;text-align:center">体重データを入力するとグラフが表示されます</div>';return}const startD=new Date(START+'T00:00:00'),goalD=new Date(GOAL+'T00:00:00');const allW=[STARTW,GOALW,...actual.map(x=>x.w)];let ymin=Math.floor((Math.min(...allW)-0.7)*2)/2,ymax=Math.ceil((Math.max(...allW)+0.7)*2)/2;if(ymax-ymin<4)ymax=ymin+4;const W=620,H=270,L=46,R=14,T=18,B=34;const day=x=>(new Date(x+'T00:00:00')-startD)/86400000,total=(goalD-startD)/86400000;const X=d=>L+Math.max(0,Math.min(total,day(d)))/total*(W-L-R);const Y=w=>T+(ymax-w)/(ymax-ymin)*(H-T-B);let grid='';for(let v=Math.ceil(ymin*2)/2;v<=ymax+0.001;v+=.5){grid+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="#e8eaed"/><text x="${L-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#777">${v.toFixed(1)}</text>`}const target=`${X(START)},${Y(STARTW)} ${X(GOAL)},${Y(GOALW)}`;const pts=actual.map(x=>`${X(x.d)},${Y(x.w)}`).join(' ');const avgs=actual.map((x,i)=>{const t=new Date(x.d+'T00:00:00'),from=new Date(t);from.setDate(t.getDate()-6);const arr=actual.filter(z=>{const dz=new Date(z.d+'T00:00:00');return dz>=from&&dz<=t}).map(z=>z.w);return{d:x.d,w:arr.reduce((a,b)=>a+b,0)/arr.length}});const avgpts=avgs.map(x=>`${X(x.d)},${Y(x.w)}`).join(' ');const labels=[START,'2026-08-19','2026-08-26','2026-09-02','2026-09-09',GOAL].map(d=>`<text x="${X(d)}" y="${H-8}" font-size="9" text-anchor="middle" fill="#777">${d.slice(5).replace('-','/')}</text>`).join('');box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" aria-label="体重グラフ">${grid}<polyline points="${target}" fill="none" stroke="#999" stroke-width="2" stroke-dasharray="6 5"/>${actual.length>1?`<polyline points="${pts}" fill="none" stroke="#ff6a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`:''}${actual.length>1?`<polyline points="${avgpts}" fill="none" stroke="#19a65b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`:''}${actual.map(x=>`<circle cx="${X(x.d)}" cy="${Y(x.w)}" r="3.5" fill="#ff6a00"/>`).join('')}${labels}</svg>`}
+function chart(){
+  const p=plan();
+  const actual=Object.entries(st.entries).map(([d,e])=>({d,w:+e.weight})).filter(x=>Number.isFinite(x.w)).sort((a,b)=>a.d.localeCompare(b.d));
+  const box=$('chartbox');
+  $('chartHelp').textContent=`オレンジ＝実測、緑＝7日平均、破線＝${fmtShort(p.startDate)}の${Number(p.startWeight).toFixed(1)}kgから${fmtShort(p.goalDate)}の${Number(p.goalWeight).toFixed(1)}kgへ向かう目標ライン。日々の上下より傾向を見ます。`;
+  if(!actual.length){box.innerHTML='<div class="sub" style="padding:70px 10px;text-align:center">体重データを入力するとグラフが表示されます</div>';return}
+  const startD=new Date(p.startDate+'T00:00:00'),goalD=new Date(p.goalDate+'T00:00:00');
+  const total=Math.max(1,(goalD-startD)/86400000);
+  const allW=[+p.startWeight,+p.goalWeight,...actual.map(x=>x.w)];
+  let ymin=Math.floor((Math.min(...allW)-0.7)*2)/2,ymax=Math.ceil((Math.max(...allW)+0.7)*2)/2;
+  if(ymax-ymin<4)ymax=ymin+4;
+  const W=620,H=270,L=46,R=14,T=18,B=34;
+  const day=x=>(new Date(x+'T00:00:00')-startD)/86400000;
+  const X=d=>L+Math.max(0,Math.min(total,day(d)))/total*(W-L-R);
+  const Y=w=>T+(ymax-w)/(ymax-ymin)*(H-T-B);
+  let grid='';for(let v=Math.ceil(ymin*2)/2;v<=ymax+0.001;v+=.5){grid+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="#e8eaed"/><text x="${L-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#777">${v.toFixed(1)}</text>`}
+  const target=`${X(p.startDate)},${Y(+p.startWeight)} ${X(p.goalDate)},${Y(+p.goalWeight)}`;
+  const visible=actual.filter(x=>x.d>=p.startDate&&x.d<=p.goalDate);
+  const pts=visible.map(x=>`${X(x.d)},${Y(x.w)}`).join(' ');
+  const avgs=visible.map(x=>{const t=new Date(x.d+'T00:00:00'),from=new Date(t);from.setDate(t.getDate()-6);const arr=actual.filter(z=>{const dz=new Date(z.d+'T00:00:00');return dz>=from&&dz<=t}).map(z=>z.w);return{d:x.d,w:arr.reduce((a,b)=>a+b,0)/arr.length}});
+  const avgpts=avgs.map(x=>`${X(x.d)},${Y(x.w)}`).join(' ');
+  const tickDates=Array.from({length:6},(_,i)=>{const d=new Date(startD);d.setDate(d.getDate()+Math.round(total*i/5));return fmtDate(d.getFullYear(),d.getMonth(),d.getDate())});
+  const labels=tickDates.map(d=>`<text x="${X(d)}" y="${H-8}" font-size="9" text-anchor="middle" fill="#777">${fmtShort(d)}</text>`).join('');
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" aria-label="体重グラフ">${grid}<polyline points="${target}" fill="none" stroke="#999" stroke-width="2" stroke-dasharray="6 5"/>${visible.length>1?`<polyline points="${pts}" fill="none" stroke="#ff6a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`:''}${visible.length>1?`<polyline points="${avgpts}" fill="none" stroke="#19a65b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`:''}${visible.map(x=>`<circle cx="${X(x.d)}" cy="${Y(x.w)}" r="3.5" fill="#ff6a00"/>`).join('')}${labels}</svg>`;
+}
 function dateOffset(n){const d=new Date(today()+'T00:00:00');d.setDate(d.getDate()+n);return fmtDate(d.getFullYear(),d.getMonth(),d.getDate())}
 function weekly(){const days=Array.from({length:7},(_,i)=>dateOffset(i-6));const es=days.filter(d=>st.entries[d]).map(d=>st.entries[d]);const scores=es.map(points);const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null;const lunch=es.filter(e=>e.lunch),lunchGood=lunch.length?Math.round(lunch.filter(e=>e.lunch==='g').length/lunch.length*100):null;const buy=es.filter(e=>e.buying),buyGood=buy.length?Math.round(buy.filter(e=>e.buying==='g').length/buy.length*100):null;const protein=es.filter(e=>e.protein),proteinGood=protein.length?Math.round(protein.filter(e=>e.protein==='g').length/protein.length*100):null;$('weekly').innerHTML=[['記録日',es.length+' / 7日'],['Healthy Score（記録日の平均）',avg==null?'--':avg+'点'],['昼食 ◎率',lunchGood==null?'--':lunchGood+'%'],['買い食いなし ◎率',buyGood==null?'--':buyGood+'%'],['たんぱく質 ◎率',proteinGood==null?'--':proteinGood+'%']].map(x=>`<div class="weekrow"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}
+function fillPlanSettings(){const p=plan();$('setStartDate').value=p.startDate;$('setStartWeight').value=p.startWeight;$('setGoalDate').value=p.goalDate;$('setGoalWeight').value=p.goalWeight}
+$('savePlan').onclick=()=>{const startDate=$('setStartDate').value,goalDate=$('setGoalDate').value;const startWeight=+$('setStartWeight').value,goalWeight=+$('setGoalWeight').value;if(!startDate||!goalDate||!Number.isFinite(startWeight)||!Number.isFinite(goalWeight)||startWeight<=0||goalWeight<=0){toast('設定値を確認してください');return}if(new Date(goalDate+'T00:00:00')<=new Date(startDate+'T00:00:00')){toast('目標日は開始日より後にしてください');return}if(startWeight===goalWeight){toast('開始体重と目標体重を変えてください');return}st.settings={startDate,startWeight,goalDate,goalWeight};saveState();render();fillPlanSettings();toast('目標設定を保存しました')};
 function render(){renderHome();renderCalendar();chart();weekly();preview()}
-function goto(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===id));$('hdr').textContent=id==='home'?'Health Score':id==='input'?'今日のチェック':id==='calendar'?'スコアカレンダー':id==='chart'?'体重グラフ':'設定';if(id==='calendar')renderCalendar();if(id==='chart')chart();if(id==='settings')weekly();window.scrollTo(0,0)}
+function goto(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===id));$('hdr').textContent=id==='home'?'Health Score':id==='input'?'今日のチェック':id==='calendar'?'スコアカレンダー':id==='chart'?'体重グラフ':'設定';if(id==='calendar')renderCalendar();if(id==='chart')chart();if(id==='settings'){weekly();fillPlanSettings()}window.scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>goto(b.dataset.v));
 function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toast.tm);toast.tm=setTimeout(()=>t.classList.remove('show'),1800)}
 $('export').onclick=()=>{const blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='health-score-backup-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
-$('import').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x||typeof x!=='object'||!x.entries)throw new Error();st=x;saveState();fill();render();toast('バックアップを復元しました')}catch{toast('読み込みに失敗しました')}ev.target.value=''};
-render();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
+$('import').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x||typeof x!=='object'||!x.entries)throw new Error();st=x;st.entries=st.entries||{};st.settings={...DEFAULT_SETTINGS,...(st.settings||{})};saveState();fill();fillPlanSettings();render();toast('バックアップを復元しました')}catch{toast('読み込みに失敗しました')}ev.target.value=''};
+fillPlanSettings();render();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 </script>
 </body>
 </html>
