@@ -93,7 +93,7 @@ function criteria(k){
 
 function mealSuggest(k,e){
   if(k==='protein'){
-    const g=+e.proteinActual;if(!Number.isFinite(g))return null;
+    if(e.proteinActual==null)return null;const g=+e.proteinActual;if(!Number.isFinite(g))return null;
     const t=+st.settings.proteinTarget||100;return g>=t*.9?'g':g>=t*.7?'y':'r';
   }
   if(!['breakfast','lunch','dinner'].includes(k))return null;
@@ -104,13 +104,13 @@ function mealSuggest(k,e){
   return'r';
 }
 function calorieStatus(v){
-  const n=+v,t=+st.settings.calorieTarget||1800;if(!Number.isFinite(n))return{txt:'未入力',cls:''};
+  if(v==null||v==='')return{txt:'未入力',cls:''};const n=+v,t=+st.settings.calorieTarget||1800;if(!Number.isFinite(n))return{txt:'未入力',cls:''};
   const r=n/t;if(r>=.95&&r<=1.05)return{txt:'目標付近',cls:'good'};
   if(r>=.85&&r<=1.1)return{txt:r<.95?'やや少なめ':'やや多め',cls:'warn'};
   return{txt:r<.85?'少なめ':'多め',cls:'bad'};
 }
 function proteinStatus(v){
-  const n=+v,t=+st.settings.proteinTarget||100;if(!Number.isFinite(n))return{txt:'未入力',cls:''};
+  if(v==null||v==='')return{txt:'未入力',cls:''};const n=+v,t=+st.settings.proteinTarget||100;if(!Number.isFinite(n))return{txt:'未入力',cls:''};
   const r=n/t;if(r>=.9)return{txt:'目標圏',cls:'good'};if(r>=.7)return{txt:'あと少し',cls:'warn'};return{txt:'不足気味',cls:'bad'};
 }
 
@@ -151,19 +151,19 @@ function renderNext(e){
   box.onclick=()=>{if(e.completed)return;goto('input');setTimeout(()=>scrollToField(missing[0]),40)};
 }
 function targetWeightForDate(d){
-  const p=st.settings;if(!p.startDate||!p.goalDate||!Number.isFinite(+p.startWeight)||!Number.isFinite(+p.goalWeight))return null;
+  const p=st.settings;if(!p.startDate||!p.goalDate||p.startWeight==null||p.goalWeight==null||!Number.isFinite(+p.startWeight)||!Number.isFinite(+p.goalWeight))return null;
   const total=Math.max(1,daysBetween(p.startDate,p.goalDate)),pos=clamp(daysBetween(p.startDate,d),0,total);
   return +p.startWeight+(+p.goalWeight-+p.startWeight)*(pos/total);
 }
 function recentWeightAverage(d=today()){
   const end=dateObj(d),from=new Date(end);from.setDate(from.getDate()-6);const vals=[];
-  Object.entries(st.entries).forEach(([ds,e])=>{const dd=dateObj(ds);if(dd>=from&&dd<=end&&Number.isFinite(+e.weight))vals.push(+e.weight)});
+  Object.entries(st.entries).forEach(([ds,e])=>{const dd=dateObj(ds);if(dd>=from&&dd<=end&&e.weight!=null&&Number.isFinite(+e.weight))vals.push(+e.weight)});
   return vals.length?{avg:vals.reduce((a,b)=>a+b,0)/vals.length,n:vals.length}:null;
 }
 function renderWeightProgress(e){
   const p=st.settings,avg=recentWeightAverage(),target=targetWeightForDate(today()),box=$('weightProgress');
-  if(!Number.isFinite(+p.goalWeight)){box.innerHTML='<div class="title">体重目標</div><div class="help">設定画面で目標体重を設定してください。</div>';return}
-  const w=+e.weight,sw=+p.startWeight,gw=+p.goalWeight;
+  if(p.goalWeight==null||!Number.isFinite(+p.goalWeight)){box.innerHTML='<div class="title">体重目標</div><div class="help">設定画面で目標体重を設定してください。</div>';return}
+  const w=e.weight!=null?+e.weight:NaN,sw=p.startWeight!=null?+p.startWeight:NaN,gw=+p.goalWeight;
   let goalText='--',remain='--';
   if(Number.isFinite(w)&&Number.isFinite(sw)&&sw!==gw){
     const dir=Math.sign(gw-sw),left=dir<0?w-gw:gw-w;
@@ -267,10 +267,10 @@ function renderCalendar(){
 }
 
 function chart(){
-  const actual=Object.entries(st.entries).map(([d,e])=>({d,w:+e.weight})).filter(x=>Number.isFinite(x.w)).sort((a,b)=>a.d.localeCompare(b.d)),box=$('chartbox'),p=st.settings;
+  const actual=Object.entries(st.entries).filter(([,e])=>e.weight!=null&&Number.isFinite(+e.weight)).map(([d,e])=>({d,w:+e.weight})).sort((a,b)=>a.d.localeCompare(b.d)),box=$('chartbox'),p=st.settings;
   if(!actual.length){box.innerHTML='<div class="sub" style="padding:80px 10px;text-align:center">体重データを入力するとグラフが表示されます</div>';$('chartHelp').textContent='オレンジ＝実測、緑＝7日平均、破線＝目標ライン';return}
   const firstDate=p.startDate||actual[0].d,lastActual=actual.at(-1).d,endDate=[p.goalDate,lastActual,today()].filter(Boolean).sort().at(-1),startDate=[firstDate,actual[0].d].sort()[0];
-  const startD=dateObj(startDate),endD=dateObj(endDate),total=Math.max(1,(endD-startD)/86400000),goalW=Number.isFinite(+p.goalWeight)?+p.goalWeight:null,startW=Number.isFinite(+p.startWeight)?+p.startWeight:actual[0].w;
+  const startD=dateObj(startDate),endD=dateObj(endDate),total=Math.max(1,(endD-startD)/86400000),goalW=p.goalWeight!=null&&Number.isFinite(+p.goalWeight)?+p.goalWeight:null,startW=p.startWeight!=null&&Number.isFinite(+p.startWeight)?+p.startWeight:actual[0].w;
   const allW=[...actual.map(x=>x.w),startW,...(goalW!=null?[goalW]:[])];let ymin=Math.floor((Math.min(...allW)-.7)*2)/2,ymax=Math.ceil((Math.max(...allW)+.7)*2)/2;if(ymax-ymin<4)ymax=ymin+4;
   const W=640,H=280,L=46,R=14,T=18,B=34,day=d=>(dateObj(d)-startD)/86400000,X=d=>L+clamp(day(d),0,total)/total*(W-L-R),Y=w=>T+(ymax-w)/(ymax-ymin)*(H-T-B);
   let grid='';for(let v=Math.ceil(ymin*2)/2;v<=ymax+.001;v+=.5)grid+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="#e8eaed"/><text x="${L-6}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#777">${v.toFixed(1)}</text>`;
