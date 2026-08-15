@@ -1,13 +1,15 @@
-// Health Score PWA v0.5.0
-const CACHE='health-score-v0.5.0';
-const ASSETS=['./','./index.html','./styles.css?v=050','./app.js?v=050','./manifest.webmanifest','./icon.svg?v=3'];
+// Health Score PWA v0.6.0
+const CACHE='health-score-v0.6.0';
+const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./app.js?v=050','./enhancements-v060.js?v=060','./manifest.webmanifest','./icon.svg?v=3'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
-  self.skipWaiting();
 });
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
+});
+self.addEventListener('message',event=>{
+  if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
 });
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
