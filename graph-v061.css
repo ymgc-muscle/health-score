@@ -1,0 +1,47 @@
+/* Health Score graph page v0.6.1 */
+#chart .graph-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+#chart .graph-toolbar .title{font-size:18px}
+#chart .graph-toolbar .sub{font-size:13px;margin-top:3px}
+#chart .graph-range{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#f0f2f4;border-radius:11px;padding:4px;min-width:190px}
+#chart .graph-range button{border:0;background:transparent;border-radius:8px;padding:8px 9px;font-size:12px;font-weight:850;color:#6b7178}
+#chart .graph-range button.on{background:#fff;color:var(--o);box-shadow:0 1px 5px #0002}
+#chart .graph-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+#chart .graph-stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+#chart .graph-stat .label{font-size:12px;color:var(--mut);line-height:1.35}
+#chart .graph-stat .value{font-size:23px;font-weight:900;line-height:1.15;margin-top:5px;white-space:nowrap}
+#chart .graph-stat .unit{font-size:12px;font-weight:750;color:var(--mut);margin-left:2px}
+#chart .graph-stat.good .value{color:var(--g2)}
+#chart .graph-stat.warn .value{color:#a66600}
+#chart .graph-main-card{padding:15px 12px 13px}
+#chart .graph-legend{display:flex;flex-wrap:wrap;gap:7px 13px;margin:1px 3px 10px;font-size:12px;color:#555}
+#chart .graph-legend span{display:flex;align-items:center;gap:5px}
+#chart .graph-legend i{display:inline-block;width:17px;height:3px;border-radius:999px;background:#ff6a00}
+#chart .graph-legend .avg i{background:#19a65b}
+#chart .graph-legend .target i{height:0;border-top:2px dashed #858b91;background:transparent}
+#chart .chart{height:360px;overflow:visible}
+#chart .chart svg{overflow:visible}
+#chart .graph-foot{font-size:13px;line-height:1.65;color:#555;margin:8px 4px 0}
+#chart .graph-insights{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#chart .graph-insight{border:1px solid var(--line);background:#fff;border-radius:14px;padding:13px}
+#chart .graph-insight .label{font-size:12px;color:var(--mut)}
+#chart .graph-insight b{display:block;font-size:18px;margin-top:4px;line-height:1.35}
+#chart .graph-insight span{display:block;font-size:12px;color:#626970;margin-top:4px;line-height:1.5}
+#chart .graph-progress{margin-top:13px}
+#chart .graph-progress-head{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px}
+#chart .graph-progress-head b{font-size:14px}
+#chart .graph-progress-track{height:12px;border-radius:999px;background:#eceff1;overflow:hidden}
+#chart .graph-progress-track i{display:block;height:100%;background:linear-gradient(90deg,var(--o),var(--g));border-radius:999px}
+#chart .graph-empty{padding:70px 16px;text-align:center;color:var(--mut);font-size:14px;line-height:1.7}
+@media(max-width:600px){
+  #chart .graph-toolbar{display:block}
+  #chart .graph-range{margin-top:10px;width:100%;min-width:0}
+  #chart .graph-range button{font-size:13px;padding:9px}
+  #chart .graph-summary{grid-template-columns:1fr 1fr}
+  #chart .graph-stat{padding:12px 10px}
+  #chart .graph-stat .label{font-size:13px}
+  #chart .graph-stat .value{font-size:24px}
+  #chart .chart{height:390px}
+  #chart .graph-insights{grid-template-columns:1fr}
+  #chart .graph-legend{font-size:13px}
+  #chart .graph-foot{font-size:13px}
+}
