@@ -1,3 +1,4 @@
+// Health Score PWA v0.3.3
 const CACHE='health-score-v0.3.3';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg?v=3','./settings-v033.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
