@@ -1,4 +1,4 @@
-/* Health Score v0.6.4 — compact input + settings */
+/* Health Score v0.6.5 — compact input + semantic settings */
 
 /* ---------- shared ---------- */
 .ui64-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
@@ -70,9 +70,27 @@
 #input #inputComplete .complete-card{margin-bottom:4px!important;padding:13px 14px}
 #input #inputComplete .complete-note{display:none}
 
+/* read-only scoring rules live with input, not Settings */
+#input .ui65-reference{background:#fff;border-radius:20px;margin:0 0 10px;overflow:hidden}
+#input .ui65-reference>summary{list-style:none;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:14px 15px;cursor:pointer}
+#input .ui65-reference>summary::-webkit-details-marker{display:none}
+#input .ui65-ref-icon{width:32px;height:32px;border-radius:10px;background:#f2f2f7;color:#6e6e73;display:grid;place-items:center}
+#input .ui65-ref-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#input .ui65-ref-copy b{display:block;font-size:15px}
+#input .ui65-ref-copy small{display:block;font-size:11px;color:#8a8a8f;margin-top:2px;font-weight:650}
+#input .ui65-ref-arrow{font-size:23px;color:#c7c7cc;transition:.18s}
+#input .ui65-reference[open] .ui65-ref-arrow{transform:rotate(90deg)}
+#input .ui65-reference-body{padding:0 10px 10px}
+#input .ui65-reference-card{margin:0!important;background:#f7f7f9!important;border-radius:15px!important;padding:11px!important}
+#input .ui65-reference-card>.title{display:none}
+#input .ui65-reference-card #allCriteria details{background:#fff;border-radius:12px;padding:0 10px;margin-top:7px}
+#input .ui65-reference-card #allCriteria details:first-child{margin-top:0}
+#input .ui65-reference-card #allCriteria summary{padding:10px 0;font-size:13px;font-weight:800}
+#input .ui65-reference-card #allCriteria .help{font-size:11px;line-height:1.65;padding-bottom:10px}
+
 /* ---------- settings ---------- */
 #settings .ui-page-head{margin-bottom:12px}
-#settings .ui-page-head .ui-page-sub{display:none}
+#settings .ui-page-head .ui-page-sub{display:block!important;font-size:12px}
 #settings>.card:not(.ui-settings-focus){margin-bottom:10px}
 #settings #saveSettings{margin:0}
 #settings .ui64-settings-summary{margin-bottom:12px}
@@ -94,17 +112,28 @@
 #settings .ui64-settings-item>summary::-webkit-details-marker{display:none}
 #settings .ui64-settings-item>summary .ui64-set-icon{width:30px;height:30px;border-radius:10px;background:#f2f2f7;color:var(--o);display:grid;place-items:center}
 #settings .ui64-settings-item>summary .ui64-set-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#settings .ui64-settings-item>summary .ui64-set-meta{font-size:11px;color:#8a8a8f;font-weight:700}
+#settings .ui64-settings-item>summary .ui64-set-meta{font-size:11px;color:#8a8a8f;font-weight:700;display:block;margin-top:2px}
 #settings .ui64-settings-item>summary:after{content:'›';font-size:23px;color:#c7c7cc;transition:.18s}
 #settings .ui64-settings-item[open]>summary:after{transform:rotate(90deg)}
 #settings .ui64-settings-item>.ui64-settings-item-body{padding:0 10px 10px}
 #settings .ui64-settings-item>.ui64-settings-item-body>.card{background:#f7f7f9!important;margin:0!important;border-radius:15px!important}
 #settings .ui64-settings-item .settings-grid{grid-template-columns:1fr 1fr!important;gap:7px!important}
 #settings .ui64-settings-item input{background:#fff}
-#settings .ui64-settings-item #allCriteria details{background:#fff}
-#settings .ui64-settings-item .weekrow{padding:9px 2px;font-size:13px}
 #settings .ui64-settings-item.ui64-data .btn2{background:#fff}
+#settings .ui65-save-score{margin-top:10px}
 #settings .version{font-size:10px;margin:14px 0 4px}
+
+/* weekly summary is analysis, so it lives on Graph */
+#chart .ui65-weekly-analysis{border:0!important;border-radius:22px!important;padding:15px!important;margin-top:10px}
+#chart .ui65-weekly-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#chart .ui65-weekly-icon{width:34px;height:34px;border-radius:11px;background:#f2f2f7;color:var(--o);display:grid;place-items:center;flex:0 0 auto}
+#chart .ui65-weekly-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#chart .ui65-weekly-head .title{font-size:17px}
+#chart .ui65-weekly-head .sub{font-size:11px;margin-top:1px}
+#chart .ui65-weekly-card{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
+#chart .ui65-weekly-card>.title{display:none}
+#chart .ui65-weekly-card .weekrow{padding:10px 2px;border-bottom:1px solid #ededf0;font-size:13px}
+#chart .ui65-weekly-card .weekrow:last-child{border-bottom:0}
 
 @media(max-width:520px){
   .ui64-summary-row{grid-template-columns:1fr 1fr}
