@@ -1,0 +1,37 @@
+/* Health Score v0.6.7 — interactive finger-tracking swipe */
+
+/* Keep v0.6.6 information placement. */
+#ui66HiddenLogic{display:none!important}
+#input #ui65Rules{display:none!important}
+#calendar .ui66-weekly-analysis{border:0!important;border-radius:22px!important;padding:15px!important;margin-top:10px}
+#calendar .ui66-weekly-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#calendar .ui66-weekly-icon{width:34px;height:34px;border-radius:11px;background:#f2f2f7;color:var(--o);display:grid;place-items:center;flex:0 0 auto}
+#calendar .ui66-weekly-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#calendar .ui66-weekly-head .title{font-size:17px}
+#calendar .ui66-weekly-head .sub{font-size:11px;margin-top:1px}
+#calendar .ui66-weekly-card{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
+#calendar .ui66-weekly-card>.title{display:none}
+#calendar .ui66-weekly-card .weekrow{padding:10px 2px;border-bottom:1px solid #ededf0;font-size:13px}
+#calendar .ui66-weekly-card .weekrow:last-child{border-bottom:0}
+#chart #ui65WeeklyAnalysis{display:none!important}
+
+/* Native vertical scrolling remains available. Horizontal movement is handled by JS. */
+body.ui-clean main{touch-action:pan-y}
+body.ui-clean input,body.ui-clean textarea,body.ui-clean select{touch-action:auto}
+
+/* During the gesture, two real snapshots are visible at once and move 1:1 with the finger. */
+.ui67-stage{position:fixed;inset:0;z-index:35;overflow:hidden;background:#f2f2f7;pointer-events:none;contain:layout paint}
+.ui67-page{position:absolute;inset:0;overflow:hidden;background:#f2f2f7;will-change:transform,opacity;transform:translate3d(0,0,0)}
+.ui67-page-inner{max-width:720px;margin:0 auto;padding:14px 12px 90px;will-change:transform}
+.ui67-page .view{display:block!important}
+.ui67-page.ui67-current{z-index:2;box-shadow:14px 0 34px rgba(0,0,0,.13)}
+.ui67-page.ui67-target{z-index:1}
+.ui67-stage.ui67-settling .ui67-page{transition:transform .24s cubic-bezier(.22,.9,.27,1),opacity .24s ease-out}
+body.ui67-swiping{overscroll-behavior-x:none}
+
+@media(max-width:520px){
+  .ui67-page-inner{padding-top:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ui67-stage.ui67-settling .ui67-page{transition-duration:.08s}
+}
