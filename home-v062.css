@@ -1,0 +1,75 @@
+/* Health Score home v0.6.2 — compact, glanceable layout */
+body.home-clean{background:#f2f2f7}
+body.home-clean header{display:none}
+body.home-clean main{padding-top:16px}
+#home.home-v062>.hero,
+#home.home-v062>.next-card,
+#home.home-v062>#weightProgress,
+#home.home-v062>#actualsCard,
+#home.home-v062>#scoreInsights,
+#home.home-v062>#focusCard,
+#home.home-v062>#weeklyHome,
+#home.home-v062>#quickCard,
+#home.home-v062>#homeComplete,
+#home.home-v062>.card:not(#appleHome){display:none!important}
+#home #appleHome{display:block;border:0;background:transparent;box-shadow:none;padding:0;margin:0}
+
+.ah-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 16px}
+.ah-date{font-size:13px;color:#7b7b80;font-weight:650;margin-bottom:2px}
+.ah-title{font-size:32px;line-height:1.08;font-weight:900;letter-spacing:-.035em}
+.ah-add{width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:var(--o);font-size:27px;line-height:1;display:grid;place-items:center;box-shadow:0 1px 2px #00000010}
+
+.ah-score-card{background:#fff;border-radius:22px;padding:18px;display:flex;align-items:center;gap:18px;margin-bottom:12px}
+.ah-ring{width:112px;height:112px;flex:0 0 112px;position:relative;display:grid;place-items:center}
+.ah-ring svg{width:112px;height:112px;transform:rotate(-90deg)}
+.ah-ring-track{fill:none;stroke:#ececef;stroke-width:9}
+.ah-ring-value{fill:none;stroke:var(--o);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .25s ease}
+.ah-ring-text{position:absolute;text-align:center;line-height:1}
+.ah-ring-text b{font-size:34px;letter-spacing:-.04em}
+.ah-ring-text span{font-size:12px;color:#8a8a8f;margin-left:2px}
+.ah-score-copy{min-width:0;flex:1}
+.ah-score-copy .label{font-size:13px;color:#7b7b80;font-weight:700}
+.ah-score-copy .state{font-size:22px;font-weight:850;letter-spacing:-.02em;margin-top:3px}
+.ah-score-copy .next{font-size:13px;color:#7b7b80;margin-top:6px;line-height:1.45}
+.ah-score-copy .done{color:#16884f}
+
+.ah-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.ah-metric{border:0;background:#fff;border-radius:20px;padding:14px;text-align:left;min-height:108px;display:flex;flex-direction:column;justify-content:space-between;color:#1d1d1f}
+.ah-metric-top{display:flex;align-items:center;gap:8px;color:#6f6f74;font-size:13px;font-weight:700}
+.ah-icon{width:30px;height:30px;border-radius:10px;background:#f2f2f7;color:var(--o);display:grid;place-items:center;flex:0 0 auto}
+.ah-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ah-metric-value{font-size:27px;font-weight:900;letter-spacing:-.035em;white-space:nowrap}
+.ah-metric-value small{font-size:12px;font-weight:700;color:#8a8a8f;margin-left:3px;letter-spacing:0}
+.ah-metric-sub{font-size:11px;color:#9a9aa0;margin-top:2px}
+
+.ah-section{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px}
+.ah-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.ah-section-head b{font-size:17px;letter-spacing:-.015em}
+.ah-section-head span{font-size:12px;color:#8a8a8f;font-weight:700}
+.ah-checks{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.ah-check{border:0;background:transparent;padding:0;min-width:0;color:#6f6f74;text-align:center}
+.ah-check .ah-check-icon{width:42px;height:42px;margin:0 auto 6px;border-radius:14px;background:#f2f2f7;display:grid;place-items:center;position:relative}
+.ah-check .ah-check-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ah-check .ah-dot{position:absolute;right:-2px;top:-2px;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#c7c7cc}
+.ah-check.good{color:#16884f}.ah-check.good .ah-check-icon{background:#edf8f2}.ah-check.good .ah-dot{background:#22a861}
+.ah-check.warn{color:#a66b00}.ah-check.warn .ah-check-icon{background:#fff7e6}.ah-check.warn .ah-dot{background:#e0a218}
+.ah-check.bad{color:#b83a31}.ah-check.bad .ah-check-icon{background:#fff0ef}.ah-check.bad .ah-dot{background:#df493d}
+.ah-check-label{display:block;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.ah-trend{width:100%;border:0;background:#fff;border-radius:20px;padding:14px 15px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;text-align:left;color:#1d1d1f;margin-bottom:12px}
+.ah-trend-main{min-width:0}
+.ah-trend-main b{display:block;font-size:15px}
+.ah-trend-main span{display:block;font-size:12px;color:#8a8a8f;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ah-trend-side{font-size:13px;color:#7b7b80;font-weight:750;white-space:nowrap}
+.ah-chevron{font-size:21px;color:#c1c1c6;margin-left:2px}
+
+.ah-actions{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:4px}
+.ah-primary,.ah-secondary{border:0;border-radius:16px;padding:13px 15px;font-weight:850;font-size:14px}
+.ah-primary{background:var(--o);color:#fff}
+.ah-primary.completed{background:#e9f6ef;color:#16884f}
+.ah-secondary{background:#fff;color:#333;padding-left:18px;padding-right:18px}
+
+@media(max-width:380px){
+  .ah-score-card{gap:13px;padding:15px}.ah-ring,.ah-ring svg{width:100px;height:100px}.ah-ring{flex-basis:100px}.ah-ring-text b{font-size:31px}
+  .ah-checks{gap:3px}.ah-check .ah-check-icon{width:38px;height:38px;border-radius:12px}.ah-check-label{font-size:9px}
+}
