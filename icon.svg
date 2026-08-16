@@ -1,5 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Health Score app icon v3 -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff7a00"/>
@@ -9,25 +8,25 @@
       <stop offset="0" stop-color="#36d94a"/>
       <stop offset="1" stop-color="#19b93b"/>
     </linearGradient>
-    <marker id="arrow" markerWidth="16" markerHeight="16" refX="10" refY="8" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L12,8 L0,16 Z" fill="#22c943"/>
-    </marker>
   </defs>
 
   <rect width="512" height="512" rx="108" fill="url(#bg)"/>
 
-  <!-- Green progress arc: 12 o'clock clockwise to 9 o'clock; arrow points upward at the end -->
-  <path d="M256 88 A168 168 0 1 1 88 256"
+  <!-- Progress arc: 12 o'clock clockwise to 9 o'clock -->
+  <path d="M256 92 A164 164 0 1 1 92 256"
         fill="none" stroke="url(#green)" stroke-width="34"
-        stroke-linecap="round" marker-end="url(#arrow)"/>
+        stroke-linecap="round"/>
 
-  <!-- Remaining quarter shown as white dotted arc -->
-  <path d="M88 256 A168 168 0 0 1 256 88"
-        fill="none" stroke="#ffffff" stroke-width="30"
-        stroke-linecap="round" stroke-dasharray="2 30"/>
+  <!-- Explicit upward arrowhead; avoids SVG marker rendering differences on Android launchers -->
+  <path d="M92 218 L65 260 L119 260 Z" fill="#22c943"/>
+
+  <!-- Remaining quarter -->
+  <path d="M92 256 A164 164 0 0 1 256 92"
+        fill="none" stroke="#ffffff" stroke-width="28"
+        stroke-linecap="round" stroke-dasharray="2 29"/>
 
   <!-- Central check -->
-  <path d="M177 267 L230 320 L342 190"
-        fill="none" stroke="url(#green)" stroke-width="42"
+  <path d="M179 267 L231 319 L340 192"
+        fill="none" stroke="url(#green)" stroke-width="40"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
