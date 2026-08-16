@@ -1,0 +1,128 @@
+/* Health Score v0.6.3 — unified clean UI */
+body.ui-clean{background:#f2f2f7;color:#1d1d1f}
+body.ui-clean header{display:none}
+body.ui-clean main{max-width:720px;padding-top:16px;padding-left:12px;padding-right:12px}
+body.ui-clean .view:not(#home)>.card,
+body.ui-clean .view:not(#home) .card{border:0;box-shadow:none;border-radius:20px}
+body.ui-clean .view:not(#home) .title{font-size:17px;letter-spacing:-.015em}
+body.ui-clean .view:not(#home) .sub{color:#8a8a8f}
+body.ui-clean .view:not(#home) .help{color:#6e6e73}
+body.ui-clean input,body.ui-clean textarea,body.ui-clean select{border:0;background:#f2f2f7;border-radius:12px;color:#1d1d1f}
+body.ui-clean input:focus,body.ui-clean textarea:focus,body.ui-clean select:focus{outline:2px solid #ff6a0033;outline-offset:0}
+
+.ui-page-head{margin:2px 2px 16px}
+.ui-page-head .ui-kicker{font-size:13px;color:#8a8a8f;font-weight:650;margin-bottom:2px}
+.ui-page-head h1{font-size:32px;line-height:1.08;letter-spacing:-.035em;margin:0;font-weight:900}
+.ui-page-head .ui-page-sub{font-size:13px;color:#8a8a8f;margin-top:5px;line-height:1.45}
+.ui-title-row{display:flex;align-items:center;gap:10px;min-width:0}
+.ui-title-icon{width:34px;height:34px;border-radius:11px;background:#f2f2f7;color:var(--o);display:grid;place-items:center;flex:0 0 auto}
+.ui-title-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ui-pill{font-size:12px;font-weight:800;color:#6e6e73;background:#f2f2f7;border-radius:999px;padding:5px 8px}
+
+/* Detail input */
+#input .ui-input-overview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+#input .ui-input-overview>.card{margin:0;min-height:104px;padding:14px}
+#input .ui-date-card label{font-size:12px;color:#8a8a8f;font-weight:700}
+#input .ui-date-card input{margin-top:9px;padding:9px 10px;font-size:14px;background:#f2f2f7}
+#input .ui-score-card .rowhead{height:100%;align-items:flex-start;flex-direction:column;gap:8px}
+#input .ui-score-card #liveScoreLabel{font-size:12px;font-weight:700}
+#input .ui-score-card #liveScore{font-size:34px;letter-spacing:-.04em}
+#input .ui-score-card .autosave{min-height:auto;font-size:11px;justify-content:flex-start}
+#input .ui-weight-card,#input .ui-actual-card,#input .ui-memo-card{padding:16px}
+#input #weightCriteria{display:none!important}
+#input .ui-actual-card>.help{display:none}
+#input .ui-actual-card .grid2{margin-top:13px!important}
+#input .ratecard{border:0!important;border-radius:20px!important;margin-bottom:10px!important;background:#fff;box-shadow:none!important}
+#input .acc-head{padding:14px 15px;background:#fff}
+#input .acc-title{font-size:16px;display:flex;align-items:center;gap:10px}
+#input .acc-points{font-size:12px;color:#6e6e73;background:#f2f2f7;padding:5px 8px;border-radius:999px}
+#input .chev{font-size:18px;color:#c7c7cc}
+#input .criteria{background:#f7f7f9;border:0;border-top:1px solid #ededf0;padding:12px 15px;font-size:12px;line-height:1.65}
+#input .rate-body{padding:13px 15px 15px}
+#input .seg{gap:8px}
+#input .seg button{border:0;background:#f2f2f7;border-radius:12px;min-height:42px}
+#input .seg button.sel.g{background:#eaf7f0;color:#16884f}
+#input .seg button.sel.y{background:#fff5df;color:#9b6700}
+#input .seg button.sel.r{background:#fff0ef;color:#b83a31}
+#input .suggest{border-radius:12px;background:#f2f2f7}
+#input .checkline{background:#f7f7f9;border-radius:12px;padding:10px;margin-top:0}
+#input .complete-card{border:0;background:#fff;border-radius:20px}
+#input .complete-card.done{background:#edf8f2}
+#input textarea{min-height:92px}
+
+/* Calendar */
+#calendar>.card{padding:16px}
+#calendar .cal-head{margin-bottom:10px}
+#calendar .cal-head button{border:0;background:#f2f2f7;border-radius:12px;color:#56565b}
+#calendar .cal-title{font-size:20px;letter-spacing:-.02em}
+#calendar .cal-stats{order:-1;margin:0 0 14px;gap:8px}
+#calendar .statbox{border:0;background:#f2f2f7;border-radius:14px;padding:11px}
+#calendar .statbox b{font-size:22px;letter-spacing:-.03em}
+#calendar .calendar{gap:4px}
+#calendar .dow{font-size:12px;color:#8a8a8f;font-weight:700}
+#calendar .day{border:0;border-radius:12px;background:transparent;min-height:61px;padding:5px}
+#calendar .day.today{outline:2px solid var(--o);outline-offset:-2px;background:#fff8f1}
+#calendar .day .num{font-size:12px;color:#636366;font-weight:650}
+#calendar .day .badge{width:32px;height:32px;margin-top:5px;font-size:12px}
+#calendar .cal-legend,#calendar>.card>.help{display:none}
+#calendar .incomplete-card{background:#fff;border:0!important;border-radius:20px!important}
+#calendar .incomplete-list button{border:0;background:#f2f2f7}
+
+/* Graph — align with the same visual language */
+#chart .graph-toolbar{margin:2px 2px 16px}
+#chart .graph-toolbar .title{font-size:30px;line-height:1.08;font-weight:900;letter-spacing:-.035em}
+#chart .graph-toolbar .sub{font-size:13px;color:#8a8a8f}
+#chart .graph-range{background:#e8e8ed}
+#chart .graph-range button{color:#6e6e73}
+#chart .graph-summary{gap:8px}
+#chart .graph-stat{border:0;border-radius:18px;padding:14px}
+#chart .graph-stat .label{font-size:12px;color:#8a8a8f}
+#chart .graph-stat .value{font-size:25px}
+#chart .graph-main-card{border:0!important;border-radius:22px!important}
+#chart .graph-insight{border:0;background:#f2f2f7;border-radius:16px}
+#chart .graph-progress-track{background:#e5e5ea}
+
+/* Settings */
+#settings .setting-section{display:none}
+#settings>.card{padding:16px}
+#settings .ui-settings-focus{display:none!important}
+#settings .settings-grid{gap:9px;margin-top:13px!important}
+#settings .field label{font-size:12px;color:#8a8a8f;font-weight:650}
+#settings #targetGuide{margin:0!important;background:transparent!important;border:0!important;padding:10px 0 0!important;font-size:12px}
+#settings .ui-guide-details{margin-top:10px;background:#f2f2f7;border-radius:14px;padding:0 12px}
+#settings .ui-guide-details summary{padding:11px 0;font-size:13px;font-weight:800;color:#56565b;cursor:pointer}
+#settings .ui-guide-details #targetGuide .sub{display:none}
+#settings .ui-guide-details #targetGuide .grid2{grid-template-columns:1fr 1fr;gap:7px}
+#settings .ui-guide-details #targetGuide b{font-size:11px;font-weight:700;color:#6e6e73}
+#settings #saveSettings{border-radius:16px;padding:14px;margin-top:2px}
+#settings details.settings-advanced>summary{border:0;box-shadow:none;border-radius:18px;background:#fff;padding:15px 16px}
+#settings details.settings-advanced[open]>summary{margin-bottom:10px}
+#settings details.settings-advanced .card{border:0;box-shadow:none;border-radius:20px}
+#settings #scoreTotal{background:#f2f2f7;border-radius:12px;padding:10px 12px}
+#settings #allCriteria details{background:#f2f2f7;border-radius:12px;padding:0 11px;margin-top:7px}
+#settings #allCriteria summary{padding:10px 0;font-weight:750}
+#settings .weekrow{padding:11px 0}
+#settings .version{margin-top:18px}
+
+/* Bottom navigation */
+body.ui-clean nav{background:rgba(255,255,255,.94);border-top:1px solid #d9d9de;backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px)}
+body.ui-clean nav button{color:#8e8e93;font-size:10px;padding:7px 2px 8px;background:transparent}
+body.ui-clean nav button.on{color:var(--o)}
+body.ui-clean nav button b{height:23px;display:grid;place-items:center}
+body.ui-clean nav button b svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+@media(max-width:520px){
+  body.ui-clean main{padding-top:14px}
+  .ui-page-head h1{font-size:30px}
+  #input .ui-input-overview{grid-template-columns:1fr 1fr}
+  #input .ui-input-overview>.card{min-height:100px;padding:13px}
+  #input .ui-score-card #liveScore{font-size:32px}
+  #calendar>.card{padding:13px 10px}
+  #calendar .day{min-height:57px;padding:4px 2px}
+  #chart .graph-toolbar .title{font-size:30px}
+  #chart .graph-summary{grid-template-columns:1fr 1fr}
+}
+@media(max-width:360px){
+  #input .ui-input-overview{grid-template-columns:1fr}
+  #settings .ui-guide-details #targetGuide .grid2{grid-template-columns:1fr}
+}
