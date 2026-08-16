@@ -5,6 +5,7 @@
 #input .ui74-protein-entry input{background:#fff}
 #input .ui74-protein-help{margin-top:7px;font-size:12px;line-height:1.5;color:#6b7178}
 #input .ui74-calorie-grid{grid-template-columns:1fr}
+#input .ui74-protein-parking:empty{display:none}
 @media(max-width:600px){
   #input .ui74-protein-entry{padding:10px 11px}
 }
