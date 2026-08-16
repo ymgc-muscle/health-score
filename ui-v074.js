@@ -2,6 +2,25 @@
 
 const UI074_VERSION='0.6.14';
 
+function ui74ProteinParking(){
+  const calories=$('caloriesActual');
+  const grid=calories?.closest('.grid2');
+  if(!grid)return null;
+  let parking=$('ui74ProteinParking');
+  if(!parking){
+    parking=document.createElement('div');
+    parking.id='ui74ProteinParking';
+    parking.className='ui74-protein-parking';
+    grid.appendChild(parking);
+  }
+  return parking;
+}
+
+function ui74ParkProtein(){
+  const proteinInput=$('proteinActual'),field=proteinInput?.closest('.field'),parking=ui74ProteinParking();
+  if(field&&parking&&field.parentElement!==parking)parking.appendChild(field);
+}
+
 function ui74ArrangeProtein(){
   const input=$('input'),proteinInput=$('proteinActual');
   if(!input||!proteinInput)return;
@@ -15,7 +34,7 @@ function ui74ArrangeProtein(){
   if(!wrap){
     wrap=document.createElement('div');
     wrap.className='ui74-protein-entry';
-    wrap.innerHTML=`<div class="ui74-protein-help"></div>`;
+    wrap.innerHTML='<div class="ui74-protein-help"></div>';
     proteinBody.insertBefore(wrap,proteinSeg);
   }
 
@@ -30,8 +49,6 @@ function ui74ArrangeProtein(){
   const help=wrap.querySelector('.ui74-protein-help');
   if(help)help.textContent=`目標 ${target}g。入力すると、この下に ◎ ○ × の推奨が表示されます。`;
 
-  /* Protein has moved out of the generic actuals card, so make that card
-     explicitly about calories instead of leaving a misleading two-item label. */
   const calories=$('caloriesActual');
   const actualCard=calories?.closest('.card');
   if(actualCard){
@@ -57,8 +74,6 @@ function ui74OpenProtein(){
   setTimeout(()=>el?.focus(),260);
 }
 
-/* Both protein entry points on Home now lead to the same place:
-   actual grams first, then the rating immediately below it. */
 if(typeof ahOpen==='function'){
   const ui74CoreAhOpen=ahOpen;
   ahOpen=function(target){
@@ -73,6 +88,9 @@ if(typeof ahOpen==='function'){
 
 const ui74CoreFillDetail=fillDetail;
 fillDetail=function(d=$('date').value){
+  /* #rated is rebuilt by the core function. Temporarily park the persistent
+     proteinActual input outside #rated so the rebuild cannot destroy it. */
+  ui74ParkProtein();
   ui74CoreFillDetail(d);
   ui74ArrangeProtein();
 };
