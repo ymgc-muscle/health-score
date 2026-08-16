@@ -1,6 +1,6 @@
-// Health Score PWA v0.6.5 — semantic settings cleanup + icon fix
-const CACHE='health-score-v0.6.5-r2';
-const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./manifest.webmanifest','./icon.svg?v=4'];
+// Health Score PWA v0.6.6 — calendar summary + swipe navigation
+const CACHE='health-score-v0.6.6';
+const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v066.css?v=066','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v066.js?v=066','./manifest.webmanifest','./icon.svg?v=4'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
