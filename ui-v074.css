@@ -1,0 +1,10 @@
+/* Health Score v0.6.14 — unified protein actual + rating */
+#input .ui74-protein-entry{margin:2px 0 10px;padding:11px 12px;background:#f7f8fa;border:1px solid #e7e9ec;border-radius:12px}
+#input .ui74-protein-entry .field{margin:0}
+#input .ui74-protein-entry .field label{font-weight:800;color:#353a40}
+#input .ui74-protein-entry input{background:#fff}
+#input .ui74-protein-help{margin-top:7px;font-size:12px;line-height:1.5;color:#6b7178}
+#input .ui74-calorie-grid{grid-template-columns:1fr}
+@media(max-width:600px){
+  #input .ui74-protein-entry{padding:10px 11px}
+}
