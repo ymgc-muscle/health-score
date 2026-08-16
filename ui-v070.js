@@ -116,27 +116,31 @@ if(typeof graphRenderSummary==='function'){
   };
 }
 
-function ui70FixGraphLabels(){
+function ui70FixGraph(){
   const legend=[...document.querySelectorAll('#chart .graph-legend span')].find(x=>x.classList.contains('avg'));
   const avg=recentWeightAverage();
   if(legend&&avg){
     const icon=legend.querySelector('i');
-    legend.textContent=`${avg.n<7?`${avg.n}日平均`:'7日平均'}`;
+    legend.textContent=avg.n<7?`${avg.n}日平均`:'7日平均';
     if(icon)legend.prepend(icon);
   }
+  /* The top summary already shows both change-from-start and kg-to-goal.
+     A percentage progress bar is redundant and too sensitive to one weigh-in. */
+  const progress=$('graphProgress');
+  if(progress){progress.innerHTML='';progress.style.display='none'}
 }
 
 if(typeof chart==='function'){
   const ui70CoreChart=chart;
-  chart=function(){ui70CoreChart();ui70FixGraphLabels()};
+  chart=function(){ui70CoreChart();ui70FixGraph()};
 }
 
 const ui70CoreGoto=goto;
-goto=function(id){ui70CoreGoto(id);if(id==='chart')setTimeout(ui70FixGraphLabels,0)};
+goto=function(id){ui70CoreGoto(id);if(id==='chart')setTimeout(ui70FixGraph,0)};
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>goto(b.dataset.v));
 
 document.addEventListener('DOMContentLoaded',()=>{
   if(typeof renderAppleHome==='function'&&activeView==='home')renderAppleHome();
   ui70TidyHome();
-  ui70FixGraphLabels();
+  ui70FixGraph();
 });
