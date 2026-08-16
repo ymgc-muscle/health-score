@@ -1,0 +1,29 @@
+/* Health Score v0.6.6 — calendar summary + swipe navigation */
+
+/* The generated full criteria list is kept only for internal rendering logic. */
+#ui66HiddenLogic{display:none!important}
+#input #ui65Rules{display:none!important}
+
+/* Weekly summary belongs with history. */
+#calendar .ui66-weekly-analysis{border:0!important;border-radius:22px!important;padding:15px!important;margin-top:10px}
+#calendar .ui66-weekly-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#calendar .ui66-weekly-icon{width:34px;height:34px;border-radius:11px;background:#f2f2f7;color:var(--o);display:grid;place-items:center;flex:0 0 auto}
+#calendar .ui66-weekly-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#calendar .ui66-weekly-head .title{font-size:17px}
+#calendar .ui66-weekly-head .sub{font-size:11px;margin-top:1px}
+#calendar .ui66-weekly-card{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
+#calendar .ui66-weekly-card>.title{display:none}
+#calendar .ui66-weekly-card .weekrow{padding:10px 2px;border-bottom:1px solid #ededf0;font-size:13px}
+#calendar .ui66-weekly-card .weekrow:last-child{border-bottom:0}
+
+/* Previous graph placement is obsolete. */
+#chart #ui65WeeklyAnalysis{display:none!important}
+
+/* Horizontal swipe: keep native vertical scrolling, avoid browser-like horizontal panning. */
+body.ui-clean main{touch-action:pan-y}
+body.ui-clean input,body.ui-clean textarea,body.ui-clean select{touch-action:auto}
+.view.ui66-swipe-left{animation:ui66SlideLeft .20s ease-out both}
+.view.ui66-swipe-right{animation:ui66SlideRight .20s ease-out both}
+@keyframes ui66SlideLeft{from{opacity:.72;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ui66SlideRight{from{opacity:.72;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.view.ui66-swipe-left,.view.ui66-swipe-right{animation:none}}
