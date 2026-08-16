@@ -1,6 +1,6 @@
-// Health Score PWA v0.6.9 — rolling weight average fix
-const CACHE='health-score-v0.6.9';
-const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v068.js?v=068','./manifest.webmanifest','./icon.svg?v=4'];
+// Health Score PWA v0.6.10 — moving-average graph alignment + graph cleanup
+const CACHE='health-score-v0.6.10';
+const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v070.js?v=070','./manifest.webmanifest','./icon.svg?v=4'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
