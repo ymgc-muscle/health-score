@@ -1,23 +1,56 @@
 'use strict';
 
-const GRAPH075_VERSION='0.6.15';
+const GRAPH075_VERSION='0.6.16';
 
-/*
- * X-axis tick fix for long / all-period ranges.
- * The graph's visible domain may extend beyond the last measured day (for
- * example to the goal date). Tick labels must therefore be distributed over
- * range.end, not compressed into range.dataEnd.
- */
+function g75MonthIndex(ds){
+  const d=dateObj(ds);
+  return d.getFullYear()*12+d.getMonth();
+}
+function g75MonthStart(year,month){
+  return localDateString(new Date(year,month,1));
+}
+function g75AddMonths(ds,n){
+  const d=dateObj(ds);
+  return g75MonthStart(d.getFullYear(),d.getMonth()+n);
+}
+function g75MonthTicks(range){
+  const start=range.start;
+  const end=range.end||range.dataEnd;
+  const months=Math.max(0,g75MonthIndex(end)-g75MonthIndex(start));
+  const candidates=[1,2,3,4,6,12,24];
+  const maxTicks=7;
+  const step=candidates.find(n=>Math.floor(months/n)+2<=maxTicks)||24;
+  const out=[start];
+
+  const s=dateObj(start);
+  let d=g75MonthStart(s.getFullYear(),s.getMonth()+1);
+  let monthOffset=1;
+  while(d<=end){
+    if(monthOffset%step===0)out.push(d);
+    monthOffset++;
+    d=g75AddMonths(d,1);
+  }
+
+  return [...new Set(out)].filter(ds=>ds>=start&&ds<=end).sort();
+}
+
+const g75CoreAxisDateLabel=g71AxisDateLabel;
+g71AxisDateLabel=function(ds){
+  if(graph061Range!=='all')return g75CoreAxisDateLabel(ds);
+  const d=dateObj(ds);
+  if(d.getMonth()===0)return `${d.getFullYear()}/1`;
+  return `${d.getMonth()+1}月`;
+};
+
 g71TickDates=function(range){
   const start=range.start;
-  const end=range.end || range.dataEnd;
+  const end=range.end||range.dataEnd;
   const span=Math.max(0,g71Days(start,end));
 
-  /* Short ranges: no more than five labels across the visible width. */
+  if(graph061Range==='all')return g75MonthTicks(range);
+
   if(span<=16)return g71EvenTicks(start,end,5);
 
-  /* Roughly one month: use calendar Mondays, with edge labels only when there
-     is enough visual separation from the nearest weekly tick. */
   if(span<=45){
     const out=[];
     let d=g71FirstMonday(start);
@@ -31,8 +64,6 @@ g71TickDates=function(range){
     return [...new Set(out)].sort();
   }
 
-  /* Long/all-period ranges: always spread a maximum of five labels across
-     the entire visible domain. Exact dates remain available in the tooltip. */
   return g71EvenTicks(start,end,5);
 };
 
