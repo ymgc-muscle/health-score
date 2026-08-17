@@ -31,10 +31,8 @@ function g71EvenTicks(start,end,maxTicks=5){
 function g71TickDates(range){
   const span=Math.max(0,g71Days(range.start,range.dataEnd));
 
-  /* Short ranges: distribute at most five labels across the width. */
   if(span<=16)return g71EvenTicks(range.start,range.dataEnd,5);
 
-  /* About one month: calendar weeks are easiest to scan on a phone. */
   if(span<=45){
     const out=[];
     let d=g71FirstMonday(range.start);
@@ -42,15 +40,12 @@ function g71TickDates(range){
       out.push(d);
       d=graphDateAdd(d,7);
     }
-    /* Add the start only when it is visually separated from the first Monday. */
     if(!out.length||g71Days(range.start,out[0])>=4)out.unshift(range.start);
-    /* Do not add a right-edge date when it would collide with the last weekly tick. */
     const last=out.at(-1);
     if(!last||g71Days(last,range.dataEnd)>=4)out.push(range.dataEnd);
     return [...new Set(out)].sort();
   }
 
-  /* Long ranges: keep the axis sparse; exact dates remain available by tapping. */
   return g71EvenTicks(range.start,range.dataEnd,5);
 }
 function g71TooltipSvg(){
@@ -115,7 +110,8 @@ chart=function(){
   const yvals=[...stats.actual.map(x=>x.w),...avg.map(x=>x.w),...targets.flatMap(x=>[x.aw,x.bw]).filter(Number.isFinite)];
   const span=Math.max(...yvals)-Math.min(...yvals),step=graphNiceStep(Math.max(span,1));
   const ymin=Math.floor((Math.min(...yvals)-.45)/step)*step,ymax=Math.ceil((Math.max(...yvals)+.45)/step)*step;
-  const W=680,H=370,L=55,R=15,T=25,B=58,startD=dateObj(range.start),endD=dateObj(range.end),total=Math.max(1,(endD-startD)/86400000);
+  /* Keep a real right-side gutter so the newest point is comfortably tappable on phones. */
+  const W=680,H=370,L=55,R=50,T=25,B=58,startD=dateObj(range.start),endD=dateObj(range.end),total=Math.max(1,(endD-startD)/86400000);
   const X=d=>L+clamp((dateObj(d)-startD)/86400000,0,total)/total*(W-L-R);
   const Y=w=>T+(ymax-w)/(ymax-ymin)*(H-T-B);
 
@@ -143,7 +139,6 @@ chart=function(){
   box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="体重推移グラフ。点をタップまたは横になぞると日付と体重を確認できます。">${hgrid}${vgrid}${targetSvg}${avg.length>1?`<polyline points="${avgPts}" fill="none" stroke="#19a65b" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`:''}${stats.actual.length>1?`<polyline points="${actualPts}" fill="none" stroke="#ff6a00" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`:''}${circles}${latestLabel}${ticks}<text x="10" y="18" font-size="12" font-weight="700" fill="#737980">kg</text>${g71TooltipSvg()}<rect class="g71-hit" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg>`;
 
   const svg=box.querySelector('svg');
-  /* Put the transparent interaction layer behind the cursor but above plot marks. */
   const hit=svg?.querySelector('.g71-hit'),cursor=svg?.querySelector('#g71Cursor');
   if(hit&&cursor)cursor.before(hit);
   g71BindCursor(svg,stats.actual,X,Y,{W,H,L,R,T,B});
