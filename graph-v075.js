@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH075_VERSION='0.6.16';
+const GRAPH075_VERSION='0.6.17';
 
 function g75MonthIndex(ds){
   const d=dateObj(ds);
