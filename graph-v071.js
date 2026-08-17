@@ -7,26 +7,51 @@ function g71DateLabel(ds){
   const d=dateObj(ds);
   return `${d.getMonth()+1}/${d.getDate()}(${G71_WD[d.getDay()]})`;
 }
+function g71AxisDateLabel(ds){
+  const d=dateObj(ds);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
 function g71Days(a,b){return Math.round((dateObj(b)-dateObj(a))/86400000)}
 function g71FirstMonday(ds){
   const d=dateObj(ds),add=(8-d.getDay())%7;
   d.setDate(d.getDate()+add);
   return localDateString(d);
 }
-function g71TickDates(range){
-  const span=Math.max(1,g71Days(range.start,range.dataEnd));
-  const weekStep=span<=45?1:span<=100?2:4;
+function g71EvenTicks(start,end,maxTicks=5){
+  const span=Math.max(0,g71Days(start,end));
+  if(span===0)return[start];
+  const count=Math.min(maxTicks,span+1);
   const out=[];
-  let d=g71FirstMonday(range.start);
-  while(d<=range.dataEnd){
-    out.push(d);
-    d=graphDateAdd(d,7*weekStep);
+  for(let i=0;i<count;i++){
+    const offset=Math.round(span*i/(count-1));
+    out.push(graphDateAdd(start,offset));
   }
-  /* Always show today/data-end so the right edge has a clear calendar anchor. */
-  if(!out.includes(range.dataEnd))out.push(range.dataEnd);
-  /* If the range starts far before the first Monday, include the start as context. */
-  if(out.length&&g71Days(range.start,out[0])>=4&&!out.includes(range.start))out.unshift(range.start);
-  return [...new Set(out)].sort();
+  return [...new Set(out)];
+}
+function g71TickDates(range){
+  const span=Math.max(0,g71Days(range.start,range.dataEnd));
+
+  /* Short ranges: distribute at most five labels across the width. */
+  if(span<=16)return g71EvenTicks(range.start,range.dataEnd,5);
+
+  /* About one month: calendar weeks are easiest to scan on a phone. */
+  if(span<=45){
+    const out=[];
+    let d=g71FirstMonday(range.start);
+    while(d<=range.dataEnd){
+      out.push(d);
+      d=graphDateAdd(d,7);
+    }
+    /* Add the start only when it is visually separated from the first Monday. */
+    if(!out.length||g71Days(range.start,out[0])>=4)out.unshift(range.start);
+    /* Do not add a right-edge date when it would collide with the last weekly tick. */
+    const last=out.at(-1);
+    if(!last||g71Days(last,range.dataEnd)>=4)out.push(range.dataEnd);
+    return [...new Set(out)].sort();
+  }
+
+  /* Long ranges: keep the axis sparse; exact dates remain available by tapping. */
+  return g71EvenTicks(range.start,range.dataEnd,5);
 }
 function g71TooltipSvg(){
   return `<g id="g71Cursor" style="display:none;pointer-events:none">
@@ -103,8 +128,10 @@ chart=function(){
   let vgrid='',ticks='';
   tickDates.forEach(ds=>{
     const x=X(ds),isEnd=ds===range.dataEnd;
+    const edgeLeft=Math.abs(x-L)<1,edgeRight=Math.abs(x-(W-R))<1;
+    const anchor=edgeLeft?'start':edgeRight?'end':'middle';
     vgrid+=`<line x1="${x}" y1="${T}" x2="${x}" y2="${H-B}" stroke="${isEnd?'#d9dde1':'#eef0f2'}" stroke-width="1" ${isEnd?'':'stroke-dasharray="3 5"'}/>`;
-    ticks+=`<text x="${x}" y="${H-24}" font-size="12.5" font-weight="700" text-anchor="middle" fill="${isEnd?'#333':'#667078'}">${g71DateLabel(ds)}</text>`;
+    ticks+=`<text x="${x}" y="${H-24}" font-size="12.5" font-weight="700" text-anchor="${anchor}" fill="${isEnd?'#333':'#667078'}">${g71AxisDateLabel(ds)}</text>`;
   });
 
   const actualPts=stats.actual.map(x=>`${X(x.d)},${Y(x.w)}`).join(' '),avgPts=avg.map(x=>`${X(x.d)},${Y(x.w)}`).join(' ');
@@ -122,7 +149,7 @@ chart=function(){
   g71BindCursor(svg,stats.actual,X,Y,{W,H,L,R,T,B});
 
   const targetNow=targetWeightForDate(today());
-  help.innerHTML=`<b>横軸は月曜基準の週区切り</b>。日付は曜日付きで表示しています。点をタップ、またはグラフ上を横になぞると実測値を確認できます。<br>表示期間：${g71DateLabel(range.start)}〜${g71DateLabel(range.dataEnd)}　記録 ${stats.actual.length}日${Number.isFinite(targetNow)?`　今日の目標ライン ${targetNow.toFixed(1)} kg`:''}`;
+  help.innerHTML=`<b>横軸の日付は表示期間に応じて間引いています</b>。正確な日付は点をタップ、またはグラフ上を横になぞって確認できます。<br>表示期間：${g71DateLabel(range.start)}〜${g71DateLabel(range.dataEnd)}　記録 ${stats.actual.length}日${Number.isFinite(targetNow)?`　今日の目標ライン ${targetNow.toFixed(1)} kg`:''}`;
   if(typeof ui70FixGraph==='function')ui70FixGraph();
 };
 
