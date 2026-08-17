@@ -1,6 +1,6 @@
 'use strict';
 
-const UI074_VERSION='0.6.15';
+const UI074_VERSION='0.6.16';
 
 function ui74ProteinParking(){
   const calories=$('caloriesActual');
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   if($('version'))$('version').textContent=`Health Score v${UI074_VERSION}`;
 });
 
-/* Load the v0.6.15 graph-axis correction after the existing graph modules.
-   The PWA service worker will cache this file after the first successful load. */
+/* Load the current graph-axis correction after the existing graph modules.
+   The service worker caches it after the first successful load. */
 (()=>{
   if(document.querySelector('script[data-graph-v075]'))return;
   const s=document.createElement('script');
-  s.src='graph-v075.js?v=075';
+  s.src='graph-v075.js?v=076';
   s.async=false;
   s.dataset.graphV075='1';
   s.onload=()=>{
