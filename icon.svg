@@ -17,13 +17,13 @@
         fill="none" stroke="url(#green)" stroke-width="34"
         stroke-linecap="round"/>
 
-  <!-- Explicit upward arrowhead; avoids SVG marker rendering differences on Android launchers -->
-  <path d="M92 218 L65 260 L119 260 Z" fill="#22c943"/>
-
-  <!-- Remaining quarter -->
+  <!-- Remaining quarter: intentionally behind the arrowhead -->
   <path d="M92 256 A164 164 0 0 1 256 92"
         fill="none" stroke="#ffffff" stroke-width="28"
         stroke-linecap="round" stroke-dasharray="2 29"/>
+
+  <!-- Explicit upward arrowhead: intentionally drawn after the dotted arc so it stays in front -->
+  <path d="M92 218 L65 260 L119 260 Z" fill="#22c943"/>
 
   <!-- Central check -->
   <path d="M179 267 L231 319 L340 192"
