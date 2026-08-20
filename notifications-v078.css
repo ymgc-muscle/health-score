@@ -1,0 +1,12 @@
+.notify078-card{margin-top:12px}
+.notify078-times{margin-top:8px;line-height:1.7}
+.notify078-status{margin-top:12px;padding:11px 12px;border-radius:12px;background:#f2f4f6;font-weight:750;font-size:14px;line-height:1.45}
+.notify078-status.good{background:#e5f6eb;color:#11733f}
+.notify078-status.warn{background:#fff4d7;color:#8b6300}
+.notify078-status.bad{background:#ffe7e3;color:#a63d32}
+.notify078-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.notify078-actions .btn2{margin:0;min-height:44px}
+.notify078-actions .btn2:disabled{opacity:.42}
+.notify078-danger{color:#aa3c32}
+.notify078-note{margin-top:9px}
+@media(max-width:390px){.notify078-actions{grid-template-columns:1fr}}
