@@ -1,6 +1,6 @@
 'use strict';
 
-const UI074_VERSION='0.6.18';
+const UI074_VERSION='0.6.19';
 
 function ui74ProteinParking(){
   const calories=$('caloriesActual');
@@ -88,8 +88,6 @@ if(typeof ahOpen==='function'){
 
 const ui74CoreFillDetail=fillDetail;
 fillDetail=function(d=$('date').value){
-  /* #rated is rebuilt by the core function. Temporarily park the persistent
-     proteinActual input outside #rated so the rebuild cannot destroy it. */
   ui74ParkProtein();
   ui74CoreFillDetail(d);
   ui74ArrangeProtein();
@@ -108,12 +106,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   if($('version'))$('version').textContent=`Health Score v${UI074_VERSION}`;
 });
 
-/* Load the current graph-axis correction after the existing graph modules.
-   The service worker caches it after the first successful load. */
 (()=>{
   if(document.querySelector('script[data-graph-v075]'))return;
   const s=document.createElement('script');
-  s.src='graph-v075.js?v=078';
+  s.src='graph-v075.js?v=079';
   s.async=false;
   s.dataset.graphV075='1';
   s.onload=()=>{
