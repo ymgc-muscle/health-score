@@ -1,65 +1,149 @@
 'use strict';
 
 const NOTIFY078_VERSION='0.6.18';
-const HEALTH_PUSH_PUBLIC_KEY='BIJ3c77ebWnXpENqyTWlFlcJ8q1jAv5VW36MNAiUMX8AnwkEoQIxZnr_xe9qjogx7lRdDioHmWOUtRh0ohde-yg';
+const NOTIFY078_PREFS_KEY='health-score-notify-prefs-v1';
+const NOTIFY078_TOKEN_KEY='health-score-fcm-token-v1';
+const FIREBASE_CONFIG_078={
+  apiKey:'AIzaSyA3uifV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
+  authDomain:'health-score-b637d.firebaseapp.com',
+  projectId:'health-score-b637d',
+  messagingSenderId:'316048816487',
+  appId:'1:316048816487:web:7ecc1f1521fb80b4fd97c2'
+};
+const FCM_VAPID_KEY_078='BAU0BOJ4T-duTVTrAPStHtYY_Eva_ZM6EteNQyu3OGij80uR1XH6f5CalCukbF0oTFsDSnYJKXoo1U5i28w_044';
+const NOTIFY078_DEFAULTS={morning:true,morningTime:'07:00',evening:true,eveningTime:'17:30',night:true,nightTime:'21:00'};
 
-function n78Base64UrlToUint8Array(value){
-  const pad='='.repeat((4-value.length%4)%4);
-  const base64=(value+pad).replace(/-/g,'+').replace(/_/g,'/');
-  const raw=atob(base64);
-  return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
+function n78Prefs(){
+  try{return{...NOTIFY078_DEFAULTS,...JSON.parse(localStorage.getItem(NOTIFY078_PREFS_KEY)||'{}')}}catch{return{...NOTIFY078_DEFAULTS}}
 }
-function n78Supported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
-async function n78Registration(){if(!n78Supported())throw new Error('このブラウザーはWeb Pushに対応していません。');return navigator.serviceWorker.ready}
-async function n78Subscription(){const reg=await n78Registration();return reg.pushManager.getSubscription()}
-function n78SubscriptionText(sub){return sub?JSON.stringify(sub.toJSON()):''}
-function n78StatusText(permission,sub){
-  if(!n78Supported())return['この端末ではWeb Pushを利用できません。','bad'];
-  if(permission==='denied')return['通知がブラウザー設定でブロックされています。','bad'];
-  if(sub)return['この端末はPush通知に登録済みです。','good'];
-  if(permission==='granted')return['通知許可済み。Push登録を完了してください。','warn'];
-  return['通知はまだ有効になっていません。',''];
+function n78SavePrefs(){
+  const p={
+    morning:!!$('notify078Morning')?.checked,
+    morningTime:$('notify078MorningTime')?.value||'07:00',
+    evening:!!$('notify078Evening')?.checked,
+    eveningTime:$('notify078EveningTime')?.value||'17:30',
+    night:!!$('notify078Night')?.checked,
+    nightTime:$('notify078NightTime')?.value||'21:00'
+  };
+  localStorage.setItem(NOTIFY078_PREFS_KEY,JSON.stringify(p));
 }
-function n78EnsureCard(){
-  const settings=$('settings');if(!settings||$('notify078Card'))return;
-  const advanced=settings.querySelector('.settings-advanced'),card=document.createElement('div');
-  card.className='card notify078-card';card.id='notify078Card';
-  card.innerHTML=`<div class="title">プッシュ通知</div><div class="help notify078-times">予定：<b>7:00</b> 体重記録　<b>17:30</b> 帰宅前チェック　<b>21:00</b> 今日の記録</div><div class="notify078-status" id="notify078Status">確認中…</div><div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">テスト通知</button><button class="btn2" type="button" id="notify078Copy">端末登録情報をコピー</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">通知を解除</button></div><div class="help notify078-note">「端末登録情報」はGitHub Secretsへの初回設定にだけ使います。アプリ内には秘密鍵を保存しません。</div>`;
-  settings.insertBefore(card,advanced||null);
-  $('notify078Enable').onclick=n78Enable;$('notify078Test').onclick=n78Test;$('notify078Copy').onclick=n78Copy;$('notify078Disable').onclick=n78Disable;n78Refresh();
+function n78Supported(){return 'serviceWorker' in navigator&&'Notification' in window&&typeof firebase!=='undefined'&&!!firebase.messaging}
+function n78SetStatus(text,kind=''){
+  const el=$('notify078Status');if(!el)return;
+  el.textContent=text;el.className=`notify078-status ${kind}`.trim();
+}
+function n78FirebaseMessaging(){
+  if(typeof firebase==='undefined'||!firebase.initializeApp||!firebase.messaging)throw new Error('Firebaseの通知機能を読み込めませんでした');
+  if(!firebase.apps?.length)firebase.initializeApp(FIREBASE_CONFIG_078);
+  return firebase.messaging();
+}
+async function n78WorkerRegistration(){
+  if(!('serviceWorker' in navigator))throw new Error('このブラウザーは通知に対応していません');
+  return navigator.serviceWorker.register('./firebase-messaging-sw.js?v=018',{scope:'./firebase-cloud-messaging-push-scope/'});
+}
+async function n78GetToken(askPermission){
+  if(!n78Supported())throw new Error('この端末ではWeb Pushを利用できません');
+  if(Notification.permission==='denied')throw new Error('通知が端末側でブロックされています');
+  if(askPermission&&Notification.permission!=='granted'){
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted')throw new Error('通知が許可されませんでした');
+  }
+  if(Notification.permission!=='granted')return null;
+  const registration=await n78WorkerRegistration();
+  const messaging=n78FirebaseMessaging();
+  const token=await messaging.getToken({vapidKey:FCM_VAPID_KEY_078,serviceWorkerRegistration:registration});
+  if(!token)throw new Error('通知用の端末IDを取得できませんでした');
+  localStorage.setItem(NOTIFY078_TOKEN_KEY,token);
+  return token;
 }
 async function n78Refresh(){
-  const status=$('notify078Status');if(!status)return;
-  const supported=n78Supported(),permission=supported?Notification.permission:'unsupported';
-  try{
-    const sub=supported?await n78Subscription():null,[text,cls]=n78StatusText(permission,sub);
-    status.textContent=text;status.className=`notify078-status ${cls}`.trim();
-    $('notify078Test').disabled=permission!=='granted';$('notify078Copy').disabled=!sub;$('notify078Disable').disabled=!sub;$('notify078Enable').disabled=!!sub||permission==='denied'||!supported;
-  }catch(err){status.textContent=`通知状態を確認できませんでした：${err.message||err}`;status.className='notify078-status bad'}
+  if(!$('notify078Status'))return;
+  if(!n78Supported()){
+    n78SetStatus('この端末ではWeb Pushを利用できません','bad');
+    $('notify078Enable').disabled=true;$('notify078Copy').disabled=true;$('notify078Disable').disabled=true;return;
+  }
+  if(Notification.permission==='denied'){
+    n78SetStatus('通知が端末側でブロックされています。ブラウザーのサイト設定で許可してください。','bad');
+    $('notify078Enable').disabled=true;$('notify078Copy').disabled=true;$('notify078Disable').disabled=true;return;
+  }
+  const token=localStorage.getItem(NOTIFY078_TOKEN_KEY);
+  if(token){
+    n78SetStatus('この端末はHealth Scoreの通知を受け取れる状態です。','good');
+    $('notify078Enable').textContent='通知を再接続する';$('notify078Copy').disabled=false;$('notify078Disable').disabled=false;
+  }else if(Notification.permission==='granted'){
+    n78SetStatus('通知は許可済みです。接続を完了してください。','warn');
+    $('notify078Copy').disabled=true;$('notify078Disable').disabled=true;
+  }else{
+    n78SetStatus('まだ通知を有効にしていません。');
+    $('notify078Copy').disabled=true;$('notify078Disable').disabled=true;
+  }
   if($('version'))$('version').textContent=`Health Score v${NOTIFY078_VERSION}`;
 }
 async function n78Enable(){
   try{
-    if(!n78Supported())throw new Error('このブラウザーはWeb Pushに対応していません。');
-    const permission=await Notification.requestPermission();if(permission!=='granted'){await n78Refresh();return}
-    const reg=await n78Registration();let sub=await reg.pushManager.getSubscription();
-    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:n78Base64UrlToUint8Array(HEALTH_PUSH_PUBLIC_KEY)});
-    localStorage.setItem('health-score-push-subscription',n78SubscriptionText(sub));await n78Refresh();if(typeof toast==='function')toast('この端末のPush通知を有効にしました');
-  }catch(err){if(typeof toast==='function')toast(`通知を有効にできませんでした：${err.message||err}`);await n78Refresh()}
+    n78SetStatus('通知を接続しています…');
+    const token=await n78GetToken(true);
+    if(token){n78SetStatus('通知の準備ができました。次はテスト通知を送れます。','good');if(typeof toast==='function')toast('通知を有効にしました')}
+  }catch(err){n78SetStatus(err?.message||'通知を有効にできませんでした','bad')}
+  await n78Refresh();
 }
-async function n78Test(){
-  try{if(!n78Supported()||Notification.permission!=='granted')throw new Error('通知を先に有効にしてください。');const reg=await n78Registration();await reg.showNotification('Health Score',{body:'通知テストです。',icon:'./icon.svg?v=5',tag:'health-score-test',data:{url:'./'}})}catch(err){if(typeof toast==='function')toast(`テスト通知を出せませんでした：${err.message||err}`)}
+async function n78LocalTest(){
+  try{
+    if(Notification.permission!=='granted')throw new Error('先に通知を有効にしてください');
+    const reg=await n78WorkerRegistration();
+    await reg.showNotification('Health Score',{body:'通知テストです。',icon:'./icon.svg?v=5',tag:'health-score-local-test'});
+  }catch(err){if(typeof toast==='function')toast(err?.message||'テスト通知を出せませんでした')}
 }
 async function n78CopyText(text){
   if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(text);
   const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
 }
 async function n78Copy(){
-  try{const sub=await n78Subscription();if(!sub)throw new Error('Push登録がありません。');const text=n78SubscriptionText(sub);await n78CopyText(text);localStorage.setItem('health-score-push-subscription',text);if(typeof toast==='function')toast('端末登録情報をコピーしました')}catch(err){if(typeof toast==='function')toast(`コピーできませんでした：${err.message||err}`)}
+  try{
+    let token=localStorage.getItem(NOTIFY078_TOKEN_KEY)||'';
+    if(!token)token=await n78GetToken(false)||'';
+    if(!token)throw new Error('先に通知を有効にしてください');
+    await n78CopyText(token);
+    if(typeof toast==='function')toast('テスト用の端末IDをコピーしました');
+  }catch(err){n78SetStatus(err?.message||'端末IDをコピーできませんでした','bad')}
 }
 async function n78Disable(){
-  try{const sub=await n78Subscription();if(sub)await sub.unsubscribe();localStorage.removeItem('health-score-push-subscription');await n78Refresh();if(typeof toast==='function')toast('この端末のPush登録を解除しました')}catch(err){if(typeof toast==='function')toast(`Push登録を解除できませんでした：${err.message||err}`)}
+  try{const messaging=n78FirebaseMessaging();await messaging.deleteToken().catch(()=>false)}catch{}
+  localStorage.removeItem(NOTIFY078_TOKEN_KEY);
+  n78SetStatus('この端末へのHealth Score通知を停止しました');
+  await n78Refresh();
 }
-if('serviceWorker'in navigator)navigator.serviceWorker.addEventListener('message',ev=>{if(ev.data?.type==='HEALTH_SCORE_NOTIFICATION_CLICK'&&typeof goto==='function')goto('input')});
-function n78Init(){n78EnsureCard();if($('version'))$('version').textContent=`Health Score v${NOTIFY078_VERSION}`}
+function n78EnsureCard(){
+  const settings=$('settings');if(!settings||$('notify078Card'))return;
+  const advanced=settings.querySelector('.settings-advanced'),prefs=n78Prefs(),card=document.createElement('div');
+  card.className='card notify078-card';card.id='notify078Card';
+  card.innerHTML=`<div class="title">プッシュ通知</div>
+    <div class="help">朝・夕方・夜にHealth Scoreからリマインドを受け取るための設定です。</div>
+    <div class="notify078-status" id="notify078Status">確認中…</div>
+    <div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">この端末でテスト</button><button class="btn2" type="button" id="notify078Copy">テスト用の端末IDをコピー</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">この端末の通知を停止</button></div>
+    <div class="notify078-schedule">
+      <label class="notify078-row"><span><input type="checkbox" id="notify078Morning" ${prefs.morning?'checked':''}> 朝：体重を記録</span><input type="time" id="notify078MorningTime" value="${prefs.morningTime}"></label>
+      <label class="notify078-row"><span><input type="checkbox" id="notify078Evening" ${prefs.evening?'checked':''}> 夕方：買い食い対策</span><input type="time" id="notify078EveningTime" value="${prefs.eveningTime}"></label>
+      <label class="notify078-row"><span><input type="checkbox" id="notify078Night" ${prefs.night?'checked':''}> 夜：今日の記録を完成</span><input type="time" id="notify078NightTime" value="${prefs.nightTime}"></label>
+    </div>
+    <div class="help notify078-note">時刻はこの端末に保存されます。自動配信との接続は、テスト通知が届くことを確認した次のステップで行います。</div>`;
+  settings.insertBefore(card,advanced||null);
+  $('notify078Enable').onclick=n78Enable;$('notify078Test').onclick=n78LocalTest;$('notify078Copy').onclick=n78Copy;$('notify078Disable').onclick=n78Disable;
+  ['notify078Morning','notify078MorningTime','notify078Evening','notify078EveningTime','notify078Night','notify078NightTime'].forEach(id=>$(id)?.addEventListener('change',n78SavePrefs));
+  n78Refresh();
+}
+function n78Foreground(){
+  try{
+    const messaging=n78FirebaseMessaging();
+    messaging.onMessage(payload=>{
+      const title=payload?.notification?.title||'Health Score',body=payload?.notification?.body||payload?.data?.body||'通知を受信しました';
+      if(typeof toast==='function')toast(`${title}：${body}`);
+    });
+  }catch(err){console.warn('FCM foreground listener unavailable',err)}
+}
+function n78Init(){
+  n78EnsureCard();n78Foreground();
+  if(Notification?.permission==='granted')n78GetToken(false).then(()=>n78Refresh()).catch(()=>n78Refresh());
+  if($('version'))$('version').textContent=`Health Score v${NOTIFY078_VERSION}`;
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',n78Init);else n78Init();
