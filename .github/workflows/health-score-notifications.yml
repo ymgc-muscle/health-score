@@ -1,0 +1,58 @@
+name: Health Score Notifications
+
+on:
+  schedule:
+    # GitHub Actions cron is UTC. These are 07:00, 17:30, 21:00 JST.
+    - cron: '0 22 * * *'
+    - cron: '30 8 * * *'
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: Notification to send
+        required: true
+        default: test
+        type: choice
+        options:
+          - test
+          - morning
+          - evening
+          - night
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+      HEALTH_SCORE_FCM_TOKEN: ${{ secrets.HEALTH_SCORE_FCM_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Choose notification
+        id: choose
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SLOT="${{ inputs.slot }}"
+          else
+            case "${{ github.event.schedule }}" in
+              '0 22 * * *') SLOT='morning' ;;
+              '30 8 * * *') SLOT='evening' ;;
+              '0 12 * * *') SLOT='night' ;;
+              *) echo 'Unknown schedule'; exit 1 ;;
+            esac
+          fi
+          echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
+          echo "Sending Health Score notification: $SLOT"
+
+      - name: Send Firebase push notification
+        run: node scripts/send-health-score-notification.mjs "${{ steps.choose.outputs.slot }}"
