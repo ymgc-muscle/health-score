@@ -12,6 +12,9 @@ const FIREBASE_CONFIG_078={
 };
 const FCM_VAPID_KEY_078='BAU0BOJ4T-duTVTrAPStHtYY_Eva_ZM6EteNQyu3OGij80uR1XH6f5CalCukbF0oTFsDSnYJKXoo1U5i28w_044';
 const NOTIFY078_DEFAULTS={morning:true,morningTime:'07:00',evening:true,eveningTime:'17:30',night:true,nightTime:'21:00'};
+const FIREBASE_APP_URL_078='https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js';
+const FIREBASE_MSG_URL_078='https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging-compat.js';
+let n78FirebasePromise=null;
 
 function n78Prefs(){
   try{return{...NOTIFY078_DEFAULTS,...JSON.parse(localStorage.getItem(NOTIFY078_PREFS_KEY)||'{}')}}catch{return{...NOTIFY078_DEFAULTS}}
@@ -27,38 +30,71 @@ function n78SavePrefs(){
   };
   localStorage.setItem(NOTIFY078_PREFS_KEY,JSON.stringify(p));
 }
-function n78Supported(){return 'serviceWorker' in navigator&&'Notification' in window&&typeof firebase!=='undefined'&&!!firebase.messaging}
+function n78BrowserSupported(){return 'serviceWorker' in navigator&&'Notification' in window}
 function n78SetStatus(text,kind=''){
   const el=$('notify078Status');if(!el)return;
   el.textContent=text;el.className=`notify078-status ${kind}`.trim();
 }
-function n78FirebaseMessaging(){
-  if(typeof firebase==='undefined'||!firebase.initializeApp||!firebase.messaging)throw new Error('Firebaseの通知機能を読み込めませんでした');
+function n78LoadScript(src,key){
+  return new Promise((resolve,reject)=>{
+    const existing=document.querySelector(`script[data-${key}]`);
+    if(existing){
+      if(existing.dataset.loaded==='1'){resolve();return}
+      existing.addEventListener('load',()=>resolve(),{once:true});
+      existing.addEventListener('error',()=>reject(new Error('Firebaseの読み込みに失敗しました')),{once:true});
+      return;
+    }
+    const s=document.createElement('script');
+    s.src=src;s.async=true;s.dataset[key]='1';
+    s.onload=()=>{s.dataset.loaded='1';resolve()};
+    s.onerror=()=>reject(new Error('Firebaseの読み込みに失敗しました'));
+    document.head.appendChild(s);
+  });
+}
+async function n78EnsureFirebase(){
+  if(typeof firebase!=='undefined'&&firebase.initializeApp&&firebase.messaging)return firebase;
+  if(!n78FirebasePromise)n78FirebasePromise=(async()=>{
+    await n78LoadScript(FIREBASE_APP_URL_078,'firebaseApp078');
+    await n78LoadScript(FIREBASE_MSG_URL_078,'firebaseMsg078');
+    if(typeof firebase==='undefined'||!firebase.initializeApp||!firebase.messaging)throw new Error('Firebaseの通知機能を読み込めませんでした');
+    return firebase;
+  })().catch(err=>{n78FirebasePromise=null;throw err});
+  return n78FirebasePromise;
+}
+async function n78FirebaseMessaging(){
+  await n78EnsureFirebase();
   if(!firebase.apps?.length)firebase.initializeApp(FIREBASE_CONFIG_078);
   return firebase.messaging();
 }
 async function n78WorkerRegistration(){
   if(!('serviceWorker' in navigator))throw new Error('このブラウザーは通知に対応していません');
-  return navigator.serviceWorker.register('./firebase-messaging-sw.js?v=018',{scope:'./firebase-cloud-messaging-push-scope/'});
+  return navigator.serviceWorker.register('./firebase-messaging-sw.js?v=019',{scope:'./firebase-cloud-messaging-push-scope/'});
 }
 async function n78GetToken(askPermission){
-  if(!n78Supported())throw new Error('この端末ではWeb Pushを利用できません');
+  if(!n78BrowserSupported())throw new Error('この端末ではWeb Pushを利用できません');
   if(Notification.permission==='denied')throw new Error('通知が端末側でブロックされています');
   if(askPermission&&Notification.permission!=='granted'){
     const permission=await Notification.requestPermission();
     if(permission!=='granted')throw new Error('通知が許可されませんでした');
   }
   if(Notification.permission!=='granted')return null;
+  await n78EnsureFirebase();
   const registration=await n78WorkerRegistration();
-  const messaging=n78FirebaseMessaging();
-  const token=await messaging.getToken({vapidKey:FCM_VAPID_KEY_078,serviceWorkerRegistration:registration});
+  const messaging=await n78FirebaseMessaging();
+  let token;
+  try{
+    token=await messaging.getToken({vapidKey:FCM_VAPID_KEY_078,serviceWorkerRegistration:registration});
+  }catch(err){
+    const detail=err?.code?`${err.code}: ${err.message||''}`:(err?.message||String(err));
+    throw new Error(`Firebase接続エラー：${detail}`);
+  }
   if(!token)throw new Error('通知用の端末IDを取得できませんでした');
   localStorage.setItem(NOTIFY078_TOKEN_KEY,token);
   return token;
 }
 async function n78Refresh(){
   if(!$('notify078Status'))return;
-  if(!n78Supported()){
+  if(!n78BrowserSupported()){
     n78SetStatus('この端末ではWeb Pushを利用できません','bad');
     $('notify078Enable').disabled=true;$('notify078Copy').disabled=true;$('notify078Disable').disabled=true;return;
   }
@@ -81,11 +117,17 @@ async function n78Refresh(){
 }
 async function n78Enable(){
   try{
-    n78SetStatus('通知を接続しています…');
+    n78SetStatus('Firebaseに接続しています…');
     const token=await n78GetToken(true);
-    if(token){n78SetStatus('通知の準備ができました。次はテスト通知を送れます。','good');if(typeof toast==='function')toast('通知を有効にしました')}
-  }catch(err){n78SetStatus(err?.message||'通知を有効にできませんでした','bad')}
-  await n78Refresh();
+    if(token){
+      n78SetStatus('接続できました。この端末はPush通知を受け取れます。','good');
+      $('notify078Enable').textContent='通知を再接続する';$('notify078Copy').disabled=false;$('notify078Disable').disabled=false;
+      if(typeof toast==='function')toast('通知を有効にしました');
+    }
+  }catch(err){
+    n78SetStatus(err?.message||'通知を有効にできませんでした','bad');
+    if(typeof toast==='function')toast('Firebaseへの接続を確認してください');
+  }
 }
 async function n78LocalTest(){
   try{
@@ -108,7 +150,7 @@ async function n78Copy(){
   }catch(err){n78SetStatus(err?.message||'端末IDをコピーできませんでした','bad')}
 }
 async function n78Disable(){
-  try{const messaging=n78FirebaseMessaging();await messaging.deleteToken().catch(()=>false)}catch{}
+  try{const messaging=await n78FirebaseMessaging();await messaging.deleteToken().catch(()=>false)}catch{}
   localStorage.removeItem(NOTIFY078_TOKEN_KEY);
   n78SetStatus('この端末へのHealth Score通知を停止しました');
   await n78Refresh();
@@ -132,9 +174,9 @@ function n78EnsureCard(){
   ['notify078Morning','notify078MorningTime','notify078Evening','notify078EveningTime','notify078Night','notify078NightTime'].forEach(id=>$(id)?.addEventListener('change',n78SavePrefs));
   n78Refresh();
 }
-function n78Foreground(){
+async function n78Foreground(){
   try{
-    const messaging=n78FirebaseMessaging();
+    const messaging=await n78FirebaseMessaging();
     messaging.onMessage(payload=>{
       const title=payload?.notification?.title||'Health Score',body=payload?.notification?.body||payload?.data?.body||'通知を受信しました';
       if(typeof toast==='function')toast(`${title}：${body}`);
