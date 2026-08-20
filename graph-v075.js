@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH075_VERSION='0.6.18';
+const GRAPH075_VERSION='0.6.19';
 
 function g75MonthIndex(ds){
   const d=dateObj(ds);
@@ -48,22 +48,16 @@ g71TickDates=function(range){
   const span=Math.max(0,g71Days(start,end));
 
   if(graph061Range==='all')return g75MonthTicks(range);
-
   if(span<=16)return g71EvenTicks(start,end,5);
-
   if(span<=45){
     const out=[];
     let d=g71FirstMonday(start);
-    while(d<=end){
-      out.push(d);
-      d=graphDateAdd(d,7);
-    }
+    while(d<=end){out.push(d);d=graphDateAdd(d,7)}
     if(!out.length||g71Days(start,out[0])>=4)out.unshift(start);
     const last=out.at(-1);
     if(!last||g71Days(last,end)>=4)out.push(end);
     return [...new Set(out)].sort();
   }
-
   return g71EvenTicks(start,end,5);
 };
 
@@ -88,15 +82,11 @@ let g75NotifyLoadPromise=null;
 function g75LoadNotifications(){
   if(g75NotifyLoadPromise)return g75NotifyLoadPromise;
   g75NotifyLoadPromise=(async()=>{
-    if(!document.querySelector('link[data-notify-v078]')){
+    if(!document.querySelector('link[data-notify-v079]')){
       const link=document.createElement('link');
-      link.rel='stylesheet';link.href='notifications-v078.css?v=078';link.dataset.notifyV078='1';document.head.appendChild(link);
+      link.rel='stylesheet';link.href='notifications-v078.css?v=079';link.dataset.notifyV079='1';document.head.appendChild(link);
     }
-    if(typeof firebase==='undefined')await g75LoadScript('https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js','firebase-app-compat');
-    if(!firebase.messaging)await g75LoadScript('https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging-compat.js','firebase-messaging-compat');
-    if(!document.querySelector('script[data-notify-v078]')&&!window.NOTIFY078_VERSION){
-      await g75LoadScript('notifications-v078.js?v=078','notify-v078');
-    }
+    await g75LoadScript('notifications-v079.js?v=079','notify-v079');
   })().catch(err=>console.error('Notification module load failed',err));
   return g75NotifyLoadPromise;
 }
@@ -114,6 +104,4 @@ document.addEventListener('DOMContentLoaded',()=>{
   if($('version'))$('version').textContent=`Health Score v${GRAPH075_VERSION}`;
 });
 
-/* graph-v075 is injected after DOMContentLoaded in current builds, so load the
-   notification module immediately as well. */
 g75LoadNotifications();
