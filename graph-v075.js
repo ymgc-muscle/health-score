@@ -67,21 +67,38 @@ g71TickDates=function(range){
   return g71EvenTicks(start,end,5);
 };
 
-function g75LoadNotifications(){
-  if(!document.querySelector('link[data-notify-v078]')){
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='notifications-v078.css?v=078';
-    link.dataset.notifyV078='1';
-    document.head.appendChild(link);
-  }
-  if(!document.querySelector('script[data-notify-v078]')){
-    const script=document.createElement('script');
-    script.src='notifications-v078.js?v=078';
-    script.async=false;
-    script.dataset.notifyV078='1';
+function g75LoadScript(src,marker){
+  return new Promise((resolve,reject)=>{
+    let script=document.querySelector(`script[data-${marker}]`);
+    if(script){
+      if(script.dataset.loaded==='1'){resolve();return}
+      script.addEventListener('load',()=>resolve(),{once:true});
+      script.addEventListener('error',()=>reject(new Error(`${marker} load failed`)),{once:true});
+      return;
+    }
+    script=document.createElement('script');
+    script.src=src;script.async=false;script.setAttribute(`data-${marker}`,'1');
+    script.addEventListener('load',()=>{script.dataset.loaded='1';resolve()},{once:true});
+    script.addEventListener('error',()=>reject(new Error(`${marker} load failed`)),{once:true});
     document.head.appendChild(script);
-  }
+  });
+}
+
+let g75NotifyLoadPromise=null;
+function g75LoadNotifications(){
+  if(g75NotifyLoadPromise)return g75NotifyLoadPromise;
+  g75NotifyLoadPromise=(async()=>{
+    if(!document.querySelector('link[data-notify-v078]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';link.href='notifications-v078.css?v=078';link.dataset.notifyV078='1';document.head.appendChild(link);
+    }
+    if(typeof firebase==='undefined')await g75LoadScript('https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js','firebase-app-compat');
+    if(!firebase.messaging)await g75LoadScript('https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging-compat.js','firebase-messaging-compat');
+    if(!document.querySelector('script[data-notify-v078]')&&!window.NOTIFY078_VERSION){
+      await g75LoadScript('notifications-v078.js?v=078','notify-v078');
+    }
+  })().catch(err=>console.error('Notification module load failed',err));
+  return g75NotifyLoadPromise;
 }
 
 const g75CoreGoto=goto;
