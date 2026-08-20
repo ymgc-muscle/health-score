@@ -1,6 +1,6 @@
 'use strict';
 
-const NOTIFY079_VERSION='0.6.20';
+const NOTIFY079_VERSION='0.6.21';
 const NOTIFY079_TOKEN_KEY='health-score-fcm-token-v1';
 const NOTIFY079_PREFS_KEY='health-score-notify-prefs-v1';
 const NOTIFY079_CONFIG={
@@ -99,7 +99,7 @@ async function n79LocalTest(){
   try{
     if(Notification.permission!=='granted')throw new Error('通知を先に許可してください');
     const reg=await n79MainWorker();
-    await reg.showNotification('Health Score',{body:'通知テストです。',icon:'./icon.svg?v=5',tag:'health-score-local-test'});
+    await reg.showNotification('Health Score',{body:'通知テストです。タップすると未入力項目を開きます。',icon:'./icon.svg?v=5',tag:'health-score-local-test',data:{route:'next',url:'./?notify=next'}});
   }catch(err){n79SetStatus(err?.message||'テスト通知を出せませんでした','bad')}
 }
 async function n79Copy(){
@@ -122,7 +122,7 @@ function n79EnsureCard(){
   if(!card){
     const advanced=settings.querySelector('.settings-advanced'),p=n79Prefs();card=document.createElement('div');
     card.className='card notify078-card';card.id='notify078Card';
-    card.innerHTML=`<div class="title">プッシュ通知</div><div class="help">朝・夕方・夜にHealth Scoreからリマインドを受け取るための設定です。</div><div class="notify078-status" id="notify078Status">確認中…</div><div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">この端末でテスト</button><button class="btn2" type="button" id="notify078Copy">テスト用の端末IDをコピー</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">この端末の通知を停止</button></div><div class="notify078-schedule"><label class="notify078-row"><span><input type="checkbox" id="notify078Morning" ${p.morning?'checked':''}> 朝：体重を記録</span><input type="time" id="notify078MorningTime" value="${p.morningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Evening" ${p.evening?'checked':''}> 夕方：買い食い対策</span><input type="time" id="notify078EveningTime" value="${p.eveningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Night" ${p.night?'checked':''}> 夜：今日の記録を完成</span><input type="time" id="notify078NightTime" value="${p.nightTime}"></label></div><div class="help notify078-note">時刻はこの端末に保存されます。Firebase接続後に自動配信を設定します。</div>`;
+    card.innerHTML=`<div class="title">プッシュ通知</div><div class="help">朝・夕方・夜にHealth Scoreからリマインドを受け取るための設定です。</div><div class="notify078-status" id="notify078Status">確認中…</div><div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">この端末でテスト</button><button class="btn2" type="button" id="notify078Copy">テスト用の端末IDをコピー</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">この端末の通知を停止</button></div><div class="notify078-schedule"><label class="notify078-row"><span><input type="checkbox" id="notify078Morning" ${p.morning?'checked':''}> 朝：体重を記録</span><input type="time" id="notify078MorningTime" value="${p.morningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Evening" ${p.evening?'checked':''}> 夕方：買い食い対策</span><input type="time" id="notify078EveningTime" value="${p.eveningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Night" ${p.night?'checked':''}> 夜：今日の記録を完成</span><input type="time" id="notify078NightTime" value="${p.nightTime}"></label></div><div class="help notify078-note">通知をタップすると、朝は体重、夕方は買い食い、夜は最初の未入力項目を直接開きます。</div>`;
     settings.insertBefore(card,advanced||null);
   }
   $('notify078Enable').onclick=n79Enable;$('notify078Test').onclick=n79LocalTest;$('notify078Copy').onclick=n79Copy;$('notify078Disable').onclick=n79Disable;
