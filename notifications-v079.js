@@ -1,10 +1,10 @@
 'use strict';
 
-const NOTIFY079_VERSION='0.6.19';
+const NOTIFY079_VERSION='0.6.20';
 const NOTIFY079_TOKEN_KEY='health-score-fcm-token-v1';
 const NOTIFY079_PREFS_KEY='health-score-notify-prefs-v1';
 const NOTIFY079_CONFIG={
-  apiKey:'AIzaSyA3uifV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
+  apiKey:'AIzaSyA3ufV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
   authDomain:'health-score-b637d.firebaseapp.com',
   projectId:'health-score-b637d',
   messagingSenderId:'316048816487',
