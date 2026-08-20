@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH075_VERSION='0.6.17';
+const GRAPH075_VERSION='0.6.18';
 
 function g75MonthIndex(ds){
   const d=dateObj(ds);
@@ -67,6 +67,23 @@ g71TickDates=function(range){
   return g71EvenTicks(start,end,5);
 };
 
+function g75LoadNotifications(){
+  if(!document.querySelector('link[data-notify-v078]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='notifications-v078.css?v=078';
+    link.dataset.notifyV078='1';
+    document.head.appendChild(link);
+  }
+  if(!document.querySelector('script[data-notify-v078]')){
+    const script=document.createElement('script');
+    script.src='notifications-v078.js?v=078';
+    script.async=false;
+    script.dataset.notifyV078='1';
+    document.head.appendChild(script);
+  }
+}
+
 const g75CoreGoto=goto;
 goto=function(id){
   g75CoreGoto(id);
@@ -76,5 +93,10 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>goto(b.dataset.
 
 document.addEventListener('DOMContentLoaded',()=>{
   if(activeView==='chart')chart();
+  g75LoadNotifications();
   if($('version'))$('version').textContent=`Health Score v${GRAPH075_VERSION}`;
 });
+
+/* graph-v075 is injected after DOMContentLoaded in current builds, so load the
+   notification module immediately as well. */
+g75LoadNotifications();
