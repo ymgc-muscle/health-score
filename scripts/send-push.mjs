@@ -8,8 +8,10 @@ const privateKey=process.env.VAPID_PRIVATE_KEY;
 const subscriptionRaw=process.env.PUSH_SUBSCRIPTION;
 const kind=process.env.REMINDER_KIND||'test';
 
-if(!privateKey)throw new Error('Missing GitHub secret: VAPID_PRIVATE_KEY');
-if(!subscriptionRaw)throw new Error('Missing GitHub secret: PUSH_SUBSCRIPTION');
+if(!privateKey||!subscriptionRaw){
+  console.log('Push secrets are not configured yet; skipping this run.');
+  process.exit(0);
+}
 
 let subscription;
 try{subscription=JSON.parse(subscriptionRaw)}catch{throw new Error('PUSH_SUBSCRIPTION is not valid JSON');}
@@ -23,9 +25,13 @@ const messages={
 const message=messages[kind]||messages.test;
 
 webpush.setVapidDetails('https://ymgc-muscle.github.io',PUBLIC_KEY,privateKey);
-await webpush.sendNotification(
-  subscription,
-  JSON.stringify({...message,url:'./'}),
-  {TTL:3600,urgency:'normal'}
-);
-console.log(`Sent ${kind} push notification.`);
+try{
+  await webpush.sendNotification(subscription,JSON.stringify({...message,url:'./'}),{TTL:3600,urgency:'normal'});
+  console.log(`Sent ${kind} push notification.`);
+}catch(err){
+  if(err?.statusCode===404||err?.statusCode===410){
+    console.log('The saved Push subscription is no longer valid. Re-register the device and replace PUSH_SUBSCRIPTION.');
+    process.exit(0);
+  }
+  throw err;
+}
