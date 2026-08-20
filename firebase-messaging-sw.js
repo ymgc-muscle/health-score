@@ -1,9 +1,9 @@
-/* Health Score Firebase Cloud Messaging worker v0.6.18 */
+/* Health Score Firebase Cloud Messaging worker v0.6.20 */
 importScripts('https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.17.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:'AIzaSyA3uifV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
+  apiKey:'AIzaSyA3ufV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
   authDomain:'health-score-b637d.firebaseapp.com',
   projectId:'health-score-b637d',
   messagingSenderId:'316048816487',
@@ -13,8 +13,6 @@ firebase.initializeApp({
 const messaging=firebase.messaging();
 
 messaging.onBackgroundMessage(payload=>{
-  /* Notification payloads are displayed automatically by FCM in the background.
-     For future data-only messages, provide a small fallback notification. */
   if(payload?.notification)return;
   const title=payload?.data?.title||'Health Score';
   const options={
