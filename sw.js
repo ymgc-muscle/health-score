@@ -1,8 +1,9 @@
-// Health Score PWA v0.6.18 — Web Push reminders
-const CACHE='health-score-v0.6.18-push1';
-const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./graph-v071.css?v=071','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./ui-v074.css?v=074','./notifications-v078.css?v=078','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v070.js?v=070','./graph-v071.js?v=071','./graph-v072.js?v=072','./graph-v073.js?v=073','./ui-v074.js?v=074','./graph-v075.js?v=078','./notifications-v078.js?v=078','./manifest.webmanifest','./icon.svg?v=5'];
+// Health Score PWA v0.6.19 — force-refresh Web Push connection
+const CACHE='health-score-v0.6.19-push2';
+const ASSETS=['./','./index.html','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=061','./graph-v071.css?v=071','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./ui-v074.css?v=074','./notifications-v078.css?v=078','./app.js?v=050','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=060b','./graph-v061.js?v=061','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v070.js?v=070','./graph-v071.js?v=071','./graph-v072.js?v=072','./graph-v073.js?v=073','./ui-v074.js?v=074','./graph-v075.js?v=078','./notifications-v079.js?v=079','./manifest.webmanifest','./icon.svg?v=5'];
 
 self.addEventListener('install',event=>{
+  self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
 
@@ -20,13 +21,14 @@ self.addEventListener('push',event=>{
   try{payload=event.data?.json()||{}}catch{
     try{payload={body:event.data?.text()||''}}catch{payload={}}
   }
-  const title=payload.title||'Health Score';
+  const title=payload.notification?.title||payload.data?.title||payload.title||'Health Score';
+  const body=payload.notification?.body||payload.data?.body||payload.body||'';
   const options={
-    body:payload.body||'',
+    body,
     icon:'./icon.svg?v=5',
-    tag:payload.tag||'health-score',
+    tag:payload.data?.tag||payload.tag||'health-score',
     renotify:true,
-    data:{url:payload.url||'./'}
+    data:{url:payload.data?.url||payload.url||'./'}
   };
   event.waitUntil(self.registration.showNotification(title,options));
 });
@@ -49,6 +51,12 @@ self.addEventListener('notificationclick',event=>{
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url);
+  if(url.origin===self.location.origin&&url.pathname.endsWith('/notifications-v078.js')){
+    const fresh=new URL('./notifications-v079.js?v=079',self.registration.scope);
+    event.respondWith(fetch(fresh,{cache:'no-store'}).catch(()=>caches.match('./notifications-v079.js?v=079')));
+    return;
+  }
   event.respondWith((async()=>{
     try{
       const response=await fetch(event.request);
