@@ -23,22 +23,26 @@ const templates = {
   morning: {
     title: 'Health Score',
     body: 'おはよう。今朝の体重を記録しよう。',
-    tag: 'health-score-morning'
+    tag: 'health-score-morning',
+    route: 'weight'
   },
   evening: {
     title: 'Health Score',
     body: '帰宅前チェック。買い食いせず、予定どおりいこう。',
-    tag: 'health-score-evening'
+    tag: 'health-score-evening',
+    route: 'buying'
   },
   night: {
     title: 'Health Score',
     body: '今日の記録を完成させよう。',
-    tag: 'health-score-night'
+    tag: 'health-score-night',
+    route: 'next'
   },
   test: {
     title: 'Health Score',
     body: 'FirebaseからのPush通知テストです。',
-    tag: 'health-score-remote-test'
+    tag: 'health-score-remote-test',
+    route: 'next'
   }
 };
 
@@ -86,6 +90,7 @@ async function getAccessToken() {
 async function sendPush() {
   const accessToken = await getAccessToken();
   const endpoint = `https://fcm.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/messages:send`;
+  const url = `https://ymgc-muscle.github.io/health-score/?notify=${encodeURIComponent(message.route)}`;
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -99,7 +104,8 @@ async function sendPush() {
           title: message.title,
           body: message.body,
           tag: message.tag,
-          url: 'https://ymgc-muscle.github.io/health-score/'
+          route: message.route,
+          url
         },
         webpush: {
           headers: { Urgency: slot === 'test' ? 'high' : 'normal' }
@@ -112,7 +118,7 @@ async function sendPush() {
   if (!response.ok) {
     throw new Error(`FCM send failed (${response.status}): ${text}`);
   }
-  console.log(`Health Score push sent successfully: ${slot}`);
+  console.log(`Health Score push sent successfully: ${slot} -> ${message.route}`);
   console.log(text);
 }
 
