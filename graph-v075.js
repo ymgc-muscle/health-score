@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH075_VERSION='0.6.19';
+const GRAPH075_VERSION='0.6.20';
 
 function g75MonthIndex(ds){
   const d=dateObj(ds);
@@ -84,9 +84,9 @@ function g75LoadNotifications(){
   g75NotifyLoadPromise=(async()=>{
     if(!document.querySelector('link[data-notify-v079]')){
       const link=document.createElement('link');
-      link.rel='stylesheet';link.href='notifications-v078.css?v=079';link.dataset.notifyV079='1';document.head.appendChild(link);
+      link.rel='stylesheet';link.href='notifications-v078.css?v=080';link.dataset.notifyV079='1';document.head.appendChild(link);
     }
-    await g75LoadScript('notifications-v079.js?v=079','notify-v079');
+    await g75LoadScript('notifications-v079.js?v=080','notify-v079');
   })().catch(err=>console.error('Notification module load failed',err));
   return g75NotifyLoadPromise;
 }
