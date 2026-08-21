@@ -1,6 +1,6 @@
 'use strict';
 
-const UI082_VERSION='0.6.22';
+const UI082_VERSION='0.6.23';
 
 const ui82Order=['weight','breakfast','lunch','buying','dinner','protein','steps','hiit'];
 const ui82Labels={weight:'今朝の体重',breakfast:'朝食',lunch:'昼食',buying:'帰宅時の買い食い',dinner:'夕食',protein:'たんぱく質',steps:'今日の歩数',hiit:'HIIT / 運動'};

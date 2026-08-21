@@ -68,7 +68,7 @@ async function n78FirebaseMessaging(){
 }
 async function n78WorkerRegistration(){
   if(!('serviceWorker' in navigator))throw new Error('このブラウザーは通知に対応していません');
-  return navigator.serviceWorker.register('./firebase-messaging-sw.js?v=019',{scope:'./firebase-cloud-messaging-push-scope/'});
+  return navigator.serviceWorker.register('./firebase-messaging-sw.js?v=023',{scope:'./firebase-cloud-messaging-push-scope/'});
 }
 async function n78GetToken(askPermission){
   if(!n78BrowserSupported())throw new Error('この端末ではWeb Pushを利用できません');
@@ -133,7 +133,7 @@ async function n78LocalTest(){
   try{
     if(Notification.permission!=='granted')throw new Error('先に通知を有効にしてください');
     const reg=await n78WorkerRegistration();
-    await reg.showNotification('Health Score',{body:'通知テストです。',icon:'./icon.svg?v=5',tag:'health-score-local-test'});
+    await reg.showNotification('Health Score',{body:'通知テストです。',icon:'./icon.svg?v=6',tag:'health-score-local-test'});
   }catch(err){if(typeof toast==='function')toast(err?.message||'テスト通知を出せませんでした')}
 }
 async function n78CopyText(text){

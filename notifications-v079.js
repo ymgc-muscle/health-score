@@ -1,6 +1,6 @@
 'use strict';
 
-const NOTIFY079_VERSION='0.6.21';
+const NOTIFY079_VERSION='0.6.23';
 const NOTIFY079_TOKEN_KEY='health-score-fcm-token-v1';
 const NOTIFY079_PREFS_KEY='health-score-notify-prefs-v1';
 const NOTIFY079_CONFIG={
@@ -99,7 +99,7 @@ async function n79LocalTest(){
   try{
     if(Notification.permission!=='granted')throw new Error('通知を先に許可してください');
     const reg=await n79MainWorker();
-    await reg.showNotification('Health Score',{body:'通知テストです。タップすると未入力項目を開きます。',icon:'./icon.svg?v=5',tag:'health-score-local-test',data:{route:'next',url:'./?notify=next'}});
+    await reg.showNotification('Health Score',{body:'通知テストです。タップすると未入力項目を開きます。',icon:'./icon.svg?v=6',tag:'health-score-local-test',data:{route:'next',url:'./?notify=next'}});
   }catch(err){n79SetStatus(err?.message||'テスト通知を出せませんでした','bad')}
 }
 async function n79Copy(){

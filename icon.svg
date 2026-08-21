@@ -20,7 +20,8 @@
   <!-- Remaining quarter: intentionally behind the arrowhead -->
   <path d="M92 256 A164 164 0 0 1 256 92"
         fill="none" stroke="#ffffff" stroke-width="28"
-        stroke-linecap="round" stroke-dasharray="2 29"/>
+        stroke-linecap="round" stroke-dasharray="2 29"
+        stroke-dashoffset="2"/>
 
   <!-- Explicit upward arrowhead: intentionally drawn after the dotted arc so it stays in front -->
   <path d="M92 218 L65 260 L119 260 Z" fill="#22c943"/>

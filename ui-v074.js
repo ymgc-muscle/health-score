@@ -1,6 +1,6 @@
 'use strict';
 
-const UI074_VERSION='0.6.21';
+const UI074_VERSION='0.6.23';
 
 function ui74ProteinParking(){
   const calories=$('caloriesActual');
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (()=>{
   if(document.querySelector('script[data-graph-v075]'))return;
   const s=document.createElement('script');
-  s.src='graph-v075.js?v=081';
+  s.src='graph-v075.js?v=083';
   s.async=false;
   s.dataset.graphV075='1';
   s.onload=()=>{

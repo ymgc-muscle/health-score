@@ -1,6 +1,6 @@
 'use strict';
 
-const NOTIFICATION_ROUTE_VERSION='0.6.21';
+const NOTIFICATION_ROUTE_VERSION='0.6.23';
 
 function nr81SetToday(){
   if(typeof today!=='function')return;

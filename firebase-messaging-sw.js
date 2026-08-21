@@ -17,7 +17,7 @@ messaging.onBackgroundMessage(payload=>{
   const title=payload?.data?.title||'Health Score';
   const options={
     body:payload?.data?.body||'Health Scoreを確認しましょう。',
-    icon:'./icon.svg?v=5',
+    icon:'./icon.svg?v=6',
     tag:payload?.data?.tag||'health-score-reminder',
     data:{url:payload?.data?.url||'./'}
   };
