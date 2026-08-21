@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="ui-v065.css?v=065">
 <link rel="stylesheet" href="ui-v067.css?v=067">
 <link rel="stylesheet" href="ui-v074.css?v=074">
+<link rel="stylesheet" href="ui-v082.css?v=082">
 </head>
 <body>
 <header id="hdr">Health Score</header>
@@ -57,17 +58,16 @@
   <div class="card"><div class="title">健康目標</div><div class="settings-grid" style="margin-top:12px"><div class="field"><label>1日の目標摂取カロリー</label><input type="number" id="setCalorieTarget" step="50" min="1000" max="5000"></div><div class="field"><label>1日の歩数目標</label><input type="number" id="setStepTarget" step="500" min="1000" max="50000"></div><div class="field"><label>1日のたんぱく質目標 (g)</label><input type="number" id="setProteinTarget" step="5" min="20" max="300"></div></div><div id="targetGuide" class="help" style="margin-top:12px;background:#fff8ed;border:1px solid #ffd9b8;border-radius:12px;padding:12px"></div></div>
   <div class="card"><div class="title">FOCUS（重点項目）</div><div class="help">ホームに出す重点行動を選びます。</div><div class="focus-settings"><label class="focus-option"><input type="checkbox" data-focus="breakfast">朝食</label><label class="focus-option"><input type="checkbox" data-focus="lunch">昼食</label><label class="focus-option"><input type="checkbox" data-focus="buying">帰宅時の買い食い</label><label class="focus-option"><input type="checkbox" data-focus="dinner">夕食</label><label class="focus-option"><input type="checkbox" data-focus="protein">たんぱく質</label><label class="focus-option"><input type="checkbox" data-focus="steps">歩数</label></div></div>
   <button class="btn" id="saveSettings" type="button" style="margin-bottom:12px">基本設定を保存</button>
-
   <details class="settings-advanced"><summary>詳細設定</summary><div>
     <div class="card"><div class="title">スコア配点</div><div class="help">合計100点にしてください。過去に「完了」した日の確定スコアは変わりません。</div><div class="settings-grid" style="margin-top:12px"><div class="field"><label>朝の体重測定</label><input type="number" id="score_weight" min="0" max="100"></div><div class="field"><label>朝食</label><input type="number" id="score_breakfast" min="0" max="100"></div><div class="field"><label>昼食</label><input type="number" id="score_lunch" min="0" max="100"></div><div class="field"><label>帰宅時の買い食い</label><input type="number" id="score_buying" min="0" max="100"></div><div class="field"><label>夕食</label><input type="number" id="score_dinner" min="0" max="100"></div><div class="field"><label>たんぱく質</label><input type="number" id="score_protein" min="0" max="100"></div><div class="field"><label>歩数</label><input type="number" id="score_steps" min="0" max="100"></div><div class="field"><label>HIIT / 運動</label><input type="number" id="score_hiit" min="0" max="100"></div></div><div id="scoreTotal" style="margin-top:10px;font-weight:850"></div><button class="btn2" id="resetWeights" type="button" style="margin-top:8px">配点を初期値に戻す</button></div>
     <div class="card"><div class="title">評価基準</div><div id="allCriteria"></div></div>
     <div class="card"><div class="title">週間サマリー</div><div id="weekly"></div></div>
     <div class="card"><button class="btn2" id="export">バックアップを書き出す</button><label class="btn2" style="display:block;text-align:center;margin-top:8px">バックアップを読み込む<input type="file" id="import" accept="application/json" style="display:none"></label></div>
   </div></details>
-  <div class="version" id="version">Health Score v0.6.21</div>
+  <div class="version" id="version">Health Score v0.6.22</div>
 </section>
 </main>
-<nav><button class="on" data-v="home"><b>⌂</b>ホーム</button><button data-v="input"><b>✎</b>詳細入力</button><button data-v="calendar"><b>▦</b>カレンダー</button><button data-v="chart"><b>⌁</b>グラフ</button><button data-v="settings"><b>⚙</b>設定</button></nav>
+<nav><button class="on" data-v="home"><b>⌂</b>ホーム</button><button data-v="input"><b>✎</b>記録</button><button data-v="calendar"><b>▦</b>カレンダー</button><button data-v="chart"><b>⌁</b>グラフ</button><button data-v="settings"><b>⚙</b>設定</button></nav>
 <div id="toast" class="toast"></div>
 <script src="app.js?v=050"></script>
 <script src="enhancements-v060.js?v=060"></script>
@@ -82,5 +82,6 @@
 <script src="graph-v072.js?v=072"></script>
 <script src="graph-v073.js?v=073"></script>
 <script src="ui-v074.js?v=081"></script>
+<script src="ui-v082.js?v=082"></script>
 </body>
 </html>

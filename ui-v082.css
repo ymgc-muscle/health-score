@@ -1,0 +1,11 @@
+/* Health Score v0.6.22 — next action on home */
+.ui82-next{width:100%;margin:12px 0 14px;padding:15px 17px;border:0;border-radius:18px;background:#fff4e9;text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.06);display:grid;grid-template-columns:1fr auto;grid-template-areas:'kicker sub' 'main sub';align-items:center;gap:3px 10px;color:#222;cursor:pointer}
+.ui82-next:active{transform:scale(.99)}
+.ui82-kicker{grid-area:kicker;font-size:11px;font-weight:900;letter-spacing:.12em;color:#ef6c00}
+.ui82-main{grid-area:main;font-size:18px;font-weight:900;line-height:1.35}
+.ui82-sub{grid-area:sub;font-size:12px;font-weight:700;color:#73777c;white-space:nowrap}
+.ui82-sub b{font-size:22px;color:#ef6c00;margin-left:5px;vertical-align:-2px}
+.ui82-next.done{background:#f2f7f3;cursor:default}
+.ui82-next.done .ui82-kicker{color:#43865b}
+.ui82-next.done .ui82-main{color:#315f40}
+@media(max-width:420px){.ui82-next{grid-template-columns:1fr;grid-template-areas:'kicker' 'main' 'sub'}.ui82-sub{margin-top:4px}.ui82-main{font-size:17px}}
