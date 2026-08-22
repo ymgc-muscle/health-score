@@ -1,0 +1,16 @@
+/* Health Score v0.6.25 — weekend waist measurement */
+.w83-waist-home{position:relative;width:100%;margin:0 0 14px;padding:16px 17px;border:0;border-radius:18px;background:#f2f8f4;box-shadow:0 2px 10px rgba(0,0,0,.05);text-align:left;color:#222;display:grid;grid-template-columns:1fr auto;grid-template-areas:'kicker go' 'title go' 'value go' 'sub go';gap:2px 12px;align-items:center;cursor:pointer}
+.w83-waist-home:active{transform:scale(.99)}
+.w83-kicker{grid-area:kicker;font-size:11px;font-weight:900;letter-spacing:.11em;color:#43865b}
+.w83-title{grid-area:title;font-size:14px;font-weight:800;color:#4b5450}
+.w83-value{grid-area:value;font-size:21px;font-weight:900;line-height:1.25;margin-top:3px}
+.w83-value.done{color:#315f40}
+.w83-sub{grid-area:sub;font-size:12px;color:#737b76;margin-top:4px}
+.w83-go{grid-area:go;font-size:13px;font-weight:850;color:#43865b;white-space:nowrap}
+#w83WaistInput{scroll-margin-top:68px}
+.w83-waist-input .w83-input-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.w83-waist-input .w83-badge{padding:5px 9px;border-radius:999px;background:#edf6ef;color:#43865b;font-size:11px;font-weight:850;white-space:nowrap}
+.w83-waist-input .w83-help{margin:10px -15px 12px;padding:11px 15px;background:#f7faf8;border-top:1px solid #e5eee8;border-bottom:1px solid #e5eee8}
+.w83-waist-input .w83-field{max-width:220px}
+.w83-waist-input .w83-prev{margin-top:9px;font-size:13px;font-weight:750;color:#5b6560}
+@media(max-width:420px){.w83-waist-home{grid-template-columns:1fr;grid-template-areas:'kicker' 'title' 'value' 'sub' 'go'}.w83-go{margin-top:7px}.w83-value{font-size:20px}}
