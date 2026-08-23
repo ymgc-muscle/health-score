@@ -1,7 +1,8 @@
 'use strict';
 
-const NOTIFY079_VERSION='0.6.21';
+const NOTIFY079_VERSION='0.6.27';
 const NOTIFY079_TOKEN_KEY='health-score-fcm-token-v1';
+const NOTIFY079_TOKEN_CHANGED_KEY='health-score-fcm-token-changed-v1';
 const NOTIFY079_PREFS_KEY='health-score-notify-prefs-v1';
 const NOTIFY079_CONFIG={
   apiKey:'AIzaSyA3ufV7dLgfiXMQXqnDNiXPGyvq9JHQbQM',
@@ -32,6 +33,14 @@ function n79SetStatus(text,kind=''){
   const el=$('notify078Status');if(!el)return;
   el.textContent=text;el.className=`notify078-status ${kind}`.trim();
 }
+function n79TokenChanged(){return localStorage.getItem(NOTIFY079_TOKEN_CHANGED_KEY)==='1'}
+function n79StoreToken(token){
+  const old=localStorage.getItem(NOTIFY079_TOKEN_KEY)||'';
+  if(old&&old!==token)localStorage.setItem(NOTIFY079_TOKEN_CHANGED_KEY,'1');
+  localStorage.setItem(NOTIFY079_TOKEN_KEY,token);
+  return !!old&&old!==token;
+}
+function n79ClearTokenChanged(){localStorage.removeItem(NOTIFY079_TOKEN_CHANGED_KEY)}
 function n79LoadScript(src,marker){
   return new Promise((resolve,reject)=>{
     const old=document.querySelector(`script[data-${marker}]`);
@@ -61,6 +70,11 @@ async function n79MainWorker(){
   if(!('serviceWorker' in navigator))throw new Error('この端末はWeb Pushに対応していません');
   return navigator.serviceWorker.ready;
 }
+async function n79CurrentToken(){
+  const messaging=await n79Messaging();
+  const registration=await n79MainWorker();
+  return messaging.getToken({vapidKey:NOTIFY079_VAPID,serviceWorkerRegistration:registration});
+}
 async function n79GetToken(askPermission=true){
   if(!('Notification' in window))throw new Error('この端末は通知に対応していません');
   if(Notification.permission==='denied')throw new Error('通知が端末側でブロックされています');
@@ -70,27 +84,31 @@ async function n79GetToken(askPermission=true){
   }
   if(Notification.permission!=='granted')throw new Error('通知を許可してください');
   n79SetStatus('Firebaseに接続しています…');
-  const messaging=await n79Messaging();
-  const registration=await n79MainWorker();
   try{
-    const token=await messaging.getToken({vapidKey:NOTIFY079_VAPID,serviceWorkerRegistration:registration});
+    const token=await n79CurrentToken();
     if(!token)throw new Error('端末IDが返ってきませんでした');
-    localStorage.setItem(NOTIFY079_TOKEN_KEY,token);
+    n79StoreToken(token);
     return token;
   }catch(err){
     const code=err?.code?`${err.code}：`:'';
     throw new Error(`Firebase接続エラー：${code}${err?.message||String(err)}`);
   }
 }
+async function n79CheckTokenChange(){
+  const saved=localStorage.getItem(NOTIFY079_TOKEN_KEY)||'';
+  if(!saved||!('Notification' in window)||Notification.permission!=='granted')return;
+  try{
+    const token=await n79CurrentToken();
+    if(token)n79StoreToken(token);
+  }catch{}
+  n79Refresh();
+}
 async function n79Enable(){
   const btn=$('notify078Enable');if(btn)btn.disabled=true;
   try{
     await n79GetToken(true);
-    n79SetStatus('接続できました。この端末はPush通知を受け取れます。','good');
-    if(btn)btn.textContent='通知を再接続する';
-    if($('notify078Copy'))$('notify078Copy').disabled=false;
-    if($('notify078Disable'))$('notify078Disable').disabled=false;
-    if(typeof toast==='function')toast('Firebaseとの接続が完了しました');
+    n79Refresh();
+    if(typeof toast==='function')toast(n79TokenChanged()?'端末IDが更新されました':'Firebaseとの接続が完了しました');
   }catch(err){
     n79SetStatus(err?.message||'Firebaseに接続できませんでした','bad');
   }finally{if(btn)btn.disabled=false}
@@ -107,12 +125,17 @@ async function n79Copy(){
     let token=localStorage.getItem(NOTIFY079_TOKEN_KEY)||'';
     if(!token)token=await n79GetToken(false);
     await navigator.clipboard.writeText(token);
-    if(typeof toast==='function')toast('端末IDをコピーしました');
+    if(typeof toast==='function')toast(n79TokenChanged()?'端末IDをコピーしました。GitHub Secretを更新してください':'端末IDをコピーしました');
   }catch(err){n79SetStatus(err?.message||'端末IDをコピーできませんでした','bad')}
+}
+function n79ConfirmSecret(){
+  n79ClearTokenChanged();
+  n79Refresh();
+  if(typeof toast==='function')toast('GitHub Secret更新済みとして確認しました');
 }
 async function n79Disable(){
   try{const messaging=await n79Messaging();await messaging.deleteToken().catch(()=>false)}catch{}
-  localStorage.removeItem(NOTIFY079_TOKEN_KEY);
+  localStorage.removeItem(NOTIFY079_TOKEN_KEY);n79ClearTokenChanged();
   n79SetStatus('この端末へのPush通知を停止しました');
   n79Refresh();
 }
@@ -122,20 +145,26 @@ function n79EnsureCard(){
   if(!card){
     const advanced=settings.querySelector('.settings-advanced'),p=n79Prefs();card=document.createElement('div');
     card.className='card notify078-card';card.id='notify078Card';
-    card.innerHTML=`<div class="title">プッシュ通知</div><div class="help">朝・夕方・夜にHealth Scoreからリマインドを受け取るための設定です。</div><div class="notify078-status" id="notify078Status">確認中…</div><div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">この端末でテスト</button><button class="btn2" type="button" id="notify078Copy">テスト用の端末IDをコピー</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">この端末の通知を停止</button></div><div class="notify078-schedule"><label class="notify078-row"><span><input type="checkbox" id="notify078Morning" ${p.morning?'checked':''}> 朝：体重を記録</span><input type="time" id="notify078MorningTime" value="${p.morningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Evening" ${p.evening?'checked':''}> 夕方：買い食い対策</span><input type="time" id="notify078EveningTime" value="${p.eveningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Night" ${p.night?'checked':''}> 夜：今日の記録を完成</span><input type="time" id="notify078NightTime" value="${p.nightTime}"></label></div><div class="help notify078-note">通知をタップすると、朝は体重、夕方は買い食い、夜は最初の未入力項目を直接開きます。</div>`;
+    card.innerHTML=`<div class="title">プッシュ通知</div><div class="help">朝・夕方・夜にHealth Scoreからリマインドを受け取るための設定です。</div><div class="notify078-status" id="notify078Status">確認中…</div><div class="notify078-actions"><button class="btn2" type="button" id="notify078Enable">通知を有効にする</button><button class="btn2" type="button" id="notify078Test">この端末でテスト</button><button class="btn2" type="button" id="notify078Copy">テスト用の端末IDをコピー</button><button class="btn2" type="button" id="notify079ConfirmSecret" style="display:none">GitHub更新済み</button><button class="btn2 notify078-danger" type="button" id="notify078Disable">この端末の通知を停止</button></div><div class="notify078-schedule"><label class="notify078-row"><span><input type="checkbox" id="notify078Morning" ${p.morning?'checked':''}> 朝：体重を記録</span><input type="time" id="notify078MorningTime" value="${p.morningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Evening" ${p.evening?'checked':''}> 夕方：買い食い対策</span><input type="time" id="notify078EveningTime" value="${p.eveningTime}"></label><label class="notify078-row"><span><input type="checkbox" id="notify078Night" ${p.night?'checked':''}> 夜：今日の記録を完成</span><input type="time" id="notify078NightTime" value="${p.nightTime}"></label></div><div class="help notify078-note">通知をタップすると、朝は体重、夕方は買い食い、夜は最初の未入力項目を直接開きます。</div>`;
     settings.insertBefore(card,advanced||null);
   }
-  $('notify078Enable').onclick=n79Enable;$('notify078Test').onclick=n79LocalTest;$('notify078Copy').onclick=n79Copy;$('notify078Disable').onclick=n79Disable;
+  $('notify078Enable').onclick=n79Enable;$('notify078Test').onclick=n79LocalTest;$('notify078Copy').onclick=n79Copy;$('notify079ConfirmSecret').onclick=n79ConfirmSecret;$('notify078Disable').onclick=n79Disable;
   ['notify078Morning','notify078MorningTime','notify078Evening','notify078EveningTime','notify078Night','notify078NightTime'].forEach(id=>{const el=$(id);if(el&&!el.dataset.n79){el.dataset.n79='1';el.addEventListener('change',n79SavePrefs)}});
 }
 function n79Refresh(){
   if(!$('notify078Status'))return;
-  const token=localStorage.getItem(NOTIFY079_TOKEN_KEY);
-  if(token){n79SetStatus('この端末はHealth ScoreのPush通知に接続済みです。','good');$('notify078Enable').textContent='通知を再接続する';$('notify078Copy').disabled=false;$('notify078Disable').disabled=false}
+  const token=localStorage.getItem(NOTIFY079_TOKEN_KEY),changed=n79TokenChanged(),confirm=$('notify079ConfirmSecret');
+  if(confirm)confirm.style.display=changed?'':'none';
+  if(token&&changed){n79SetStatus('⚠ 端末IDが更新されました。GitHub Actions の HEALTH_SCORE_FCM_TOKEN を新しい端末IDへ更新してください。','warn');$('notify078Enable').textContent='通知を再接続する';$('notify078Copy').disabled=false;$('notify078Disable').disabled=false}
+  else if(token){n79SetStatus('この端末はHealth ScoreのPush通知に接続済みです。','good');$('notify078Enable').textContent='通知を再接続する';$('notify078Copy').disabled=false;$('notify078Disable').disabled=false}
   else if(Notification.permission==='granted'){n79SetStatus('通知は許可済みです。「通知を有効にする」を押してFirebaseに接続してください。','warn');$('notify078Copy').disabled=true;$('notify078Disable').disabled=true}
   else if(Notification.permission==='denied'){n79SetStatus('通知が端末側でブロックされています。','bad')}
   else n79SetStatus('まだ通知を有効にしていません。');
   if($('version'))$('version').textContent=`Health Score v${NOTIFY079_VERSION}`;
 }
-function n79Init(){n79EnsureCard();n79Refresh();if($('version'))$('version').textContent=`Health Score v${NOTIFY079_VERSION}`}
+function n79Init(){
+  n79EnsureCard();n79Refresh();
+  n79CheckTokenChange();
+  if($('version'))$('version').textContent=`Health Score v${NOTIFY079_VERSION}`;
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',n79Init);else n79Init();
