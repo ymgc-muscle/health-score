@@ -3,6 +3,14 @@
 Health Score の主な変更履歴です。
 今後、アプリ本体を更新したときはバージョン番号と変更内容をここに追記します。
 
+## v0.6.26 — 2026-08-23
+
+### Changed
+- 体重グラフで7日移動平均を太い主線として強調し、日々の実測値は細く・薄く表示するよう変更。
+- グラフ上部のサマリーで「7日平均」を先頭に移し、現在の体重トレンドを主役として見やすくした。
+- グラフ凡例と補足文も、7日移動平均を中心に読む構成へ調整。
+- PWAキャッシュを更新し、グラフ表示改善用のJavaScript / CSSをプリキャッシュ対象に追加。
+
 ## v0.6.25 — 2026-08-23
 
 ### Added
@@ -60,34 +68,34 @@ Health Score の主な変更履歴です。
 ### Fixed
 - Firebase Web Push 接続時に使用する API キーの転記ミスを修正。
 - Firebase Cloud Messaging の端末登録が正常に完了するよう修正。
-- PWA キャッシュを更新し、修正版 Firebase 設定を確実に読み込むよう変更。
+- PWAキャッシュを更新し、修正版Firebase設定を確実に読み込むよう変更。
 
 ## v0.6.19 — 2026-08-20
 
 ### Fixed
-- 古い通知用 JavaScript を PWA が保持している場合でも、新しい通知コードを読み込めるようキャッシュ更新処理を改善。
-- Firebase 接続に失敗した際、実際のエラー内容を画面に残すよう診断表示を改善。
-- FCM Push payload の受信処理を改善。
+- 古い通知用JavaScriptをPWAが保持している場合でも、新しい通知コードを読み込めるようキャッシュ更新処理を改善。
+- Firebase接続に失敗した際、実際のエラー内容を画面に残すよう診断表示を改善。
+- FCM Push payloadの受信処理を改善。
 
 ### Changed
-- 表示バージョン、通知モジュール、Service Worker のバージョン参照を統一。
+- 表示バージョン、通知モジュール、Service Workerのバージョン参照を統一。
 
 ## v0.6.18 — 2026-08-20
 
 ### Added
-- Firebase Cloud Messaging を使った Web Push 通知機能の土台を追加。
+- Firebase Cloud Messagingを使ったWeb Push通知機能の土台を追加。
 - 設定画面に「プッシュ通知」カードを追加。
 - 通知の有効化、端末内テスト、端末IDコピー、通知停止を追加。
-- 朝 7:00、夕方 17:30、夜 21:00 の通知設定 UI を追加。
-- Firebase Messaging 用 Service Worker を追加。
+- 朝7:00、夕方17:30、夜21:00の通知設定UIを追加。
+- Firebase Messaging用Service Workerを追加。
 
 ### Infrastructure
-- GitHub Actions と Firebase Cloud Messaging を使った通知送信の準備を開始。
+- GitHub ActionsとFirebase Cloud Messagingを使った通知送信の準備を開始。
 
 ---
 
 ## 運用ルール
 
 - アプリ本体の機能や挙動を変更した場合はバージョン番号を上げます。
-- GitHub Actions や運用設定だけの変更でアプリ本体が変わらない場合は、原則としてアプリのバージョン番号は据え置きます。
+- GitHub Actionsや運用設定だけの変更でアプリ本体が変わらない場合は、原則としてアプリのバージョン番号は据え置きます。
 - 各アップデート後、ChatGPTからユーザーへ現在のバージョン番号を明示します。
