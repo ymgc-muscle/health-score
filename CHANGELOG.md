@@ -3,6 +3,20 @@
 Health Score の主な変更履歴です。
 今後、アプリ本体を更新したときはバージョン番号と変更内容をここに追記します。
 
+## v0.6.27 — 2026-08-23
+
+### Added
+- FCMの端末IDが以前の値から変わったことをアプリ起動時に検知し、設定画面へ警告を表示する機能を追加。
+- 警告時は新しい端末IDをコピーしてGitHub Actionsの `HEALTH_SCORE_FCM_TOKEN` を更新するよう案内。
+- GitHub Secretを更新した後に警告を解除できる「GitHub更新済み」ボタンを追加。
+
+### Changed
+- 通知モジュールを起動時に現在のFCM端末IDと保存済み端末IDを照合するよう変更。
+- PWAキャッシュを更新し、通知トークン監視の修正版を確実に読み込むよう変更。
+
+### Removed
+- Firebase方式と並存して紛らわしかった旧Web Push用の `.github/workflows/push-reminders.yml` を削除。
+
 ## v0.6.26 — 2026-08-23
 
 ### Changed
