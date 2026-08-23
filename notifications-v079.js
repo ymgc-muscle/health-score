@@ -99,7 +99,8 @@ async function n79CheckTokenChange(){
   if(!saved||!('Notification' in window)||Notification.permission!=='granted')return;
   try{
     const token=await n79CurrentToken();
-    if(token)n79StoreToken(token);
+    const changed=token?n79StoreToken(token):false;
+    if(changed&&typeof toast==='function')toast('Push通知の端末IDが更新されました。設定を確認してください');
   }catch{}
   n79Refresh();
 }
