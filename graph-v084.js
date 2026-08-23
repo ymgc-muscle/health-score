@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH084_VERSION='0.6.26';
+const GRAPH084_VERSION='0.6.27';
 
 function g84EmphasizeTrend(){
   const box=$('chartbox'),svg=box?.querySelector('svg');
