@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.28';
+const UI086_VERSION='0.6.29';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 function u86EarnedPoints(k,rating){
@@ -11,15 +11,31 @@ function u86EarnedPoints(k,rating){
   return null;
 }
 
+function u86SetPoints(card,earned,max){
+  const points=card?.querySelector('.acc-points');
+  if(!points)return;
+  points.textContent=earned==null?`${max}点満点`:`${earned} / ${max}点`;
+}
+
 function u86UpdateRatingPoints(){
+  const ds=$('date')?.value||today();
+  const e=ent(ds);
+
   UI086_RATED_KEYS.forEach(k=>{
     const card=document.querySelector(`#input .ratecard[data-field="${k}"]`);
-    const points=card?.querySelector('.acc-points');
-    if(!points)return;
-    const rating=card.querySelector(`.seg[data-k="${k}"] .sel`)?.dataset.v||null;
-    const max=maxFor(k),earned=u86EarnedPoints(k,rating);
-    points.textContent=earned==null?`${max}点満点`:`${earned} / ${max}点`;
+    const max=maxFor(k),earned=u86EarnedPoints(k,e[k]||null);
+    u86SetPoints(card,earned,max);
   });
+
+  const stepsCard=document.querySelector('#input .ratecard[data-field="steps"]');
+  const stepsMax=maxFor('steps');
+  const stepsEarned=e.steps==null?null:stepPoints(e.steps);
+  u86SetPoints(stepsCard,stepsEarned,stepsMax);
+
+  const hiitCard=document.querySelector('#input .ratecard[data-field="hiit"]');
+  const hiitMax=maxFor('hiit');
+  const hiitEarned=!e.hiit?null:(e.hiit==='missed'?0:hiitMax);
+  u86SetPoints(hiitCard,hiitEarned,hiitMax);
 }
 
 if(typeof buildRated==='function'){
@@ -34,6 +50,14 @@ if(typeof updateLiveScore==='function'){
   const u86CoreUpdateLiveScore=updateLiveScore;
   updateLiveScore=function(){
     u86CoreUpdateLiveScore();
+    u86UpdateRatingPoints();
+  };
+}
+
+if(typeof fillDetail==='function'){
+  const u86CoreFillDetail=fillDetail;
+  fillDetail=function(d=$('date').value){
+    u86CoreFillDetail(d);
     u86UpdateRatingPoints();
   };
 }
