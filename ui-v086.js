@@ -54,9 +54,11 @@ function u86KeepVersion(){
   if(el.textContent!==expected)el.textContent=expected;
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+function u86Init(){
   u86UpdateRatingPoints();
   u86KeepVersion();
   const version=$('version');
   if(version)new MutationObserver(u86KeepVersion).observe(version,{childList:true,subtree:true,characterData:true});
-});
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u86Init);else u86Init();
