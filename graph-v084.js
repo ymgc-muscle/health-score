@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH084_VERSION='0.6.27';
+const GRAPH084_VERSION='0.6.28';
 
 function g84EmphasizeTrend(){
   const box=$('chartbox'),svg=box?.querySelector('svg');
@@ -65,3 +65,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   g84EmphasizeTrend();
   if($('version'))$('version').textContent=`Health Score v${GRAPH084_VERSION}`;
 });
+
+(()=>{
+  if(document.querySelector('script[data-ui-v086]'))return;
+  const s=document.createElement('script');
+  s.src='ui-v086.js?v=086';
+  s.async=false;
+  s.dataset.uiV086='1';
+  document.head.appendChild(s);
+})();
