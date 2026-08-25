@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.30';
+const UI086_VERSION='0.6.31';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 function u86EarnedPoints(k,rating){
@@ -43,13 +43,15 @@ function u86ArrangeInputOrder(){
   if(!input||!rated)return;
 
   const hiitCard=input.querySelector('.ratecard[data-field="hiit"]');
-  if(hiitCard&&hiitCard.nextElementSibling!==rated)input.insertBefore(hiitCard,rated);
-
   const stepsCard=input.querySelector('.ratecard[data-field="steps"]');
   const calorieCard=$('caloriesActual')?.closest('.card');
-  if(stepsCard&&calorieCard&&calorieCard!==stepsCard&&stepsCard.nextElementSibling!==calorieCard){
-    stepsCard.insertAdjacentElement('afterend',calorieCard);
-  }
+
+  // 朝: 体重（週末は腹囲がこの直後に入る）→ HIIT → 食事評価群
+  if(hiitCard&&hiitCard.nextElementSibling!==rated)input.insertBefore(hiitCard,rated);
+
+  // 夜の締め: 食事評価群（最後がたんぱく質）→ 歩数 → 摂取カロリー → メモ
+  if(stepsCard&&rated.nextElementSibling!==stepsCard)rated.insertAdjacentElement('afterend',stepsCard);
+  if(calorieCard&&stepsCard&&stepsCard.nextElementSibling!==calorieCard)stepsCard.insertAdjacentElement('afterend',calorieCard);
 }
 
 if(typeof buildRated==='function'){
