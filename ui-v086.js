@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.29';
+const UI086_VERSION='0.6.30';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 function u86EarnedPoints(k,rating){
@@ -38,10 +38,25 @@ function u86UpdateRatingPoints(){
   u86SetPoints(hiitCard,hiitEarned,hiitMax);
 }
 
+function u86ArrangeInputOrder(){
+  const input=$('input'),rated=$('rated');
+  if(!input||!rated)return;
+
+  const hiitCard=input.querySelector('.ratecard[data-field="hiit"]');
+  if(hiitCard&&hiitCard.nextElementSibling!==rated)input.insertBefore(hiitCard,rated);
+
+  const stepsCard=input.querySelector('.ratecard[data-field="steps"]');
+  const calorieCard=$('caloriesActual')?.closest('.card');
+  if(stepsCard&&calorieCard&&calorieCard!==stepsCard&&stepsCard.nextElementSibling!==calorieCard){
+    stepsCard.insertAdjacentElement('afterend',calorieCard);
+  }
+}
+
 if(typeof buildRated==='function'){
   const u86CoreBuildRated=buildRated;
   buildRated=function(e){
     u86CoreBuildRated(e);
+    u86ArrangeInputOrder();
     u86UpdateRatingPoints();
   };
 }
@@ -58,6 +73,7 @@ if(typeof fillDetail==='function'){
   const u86CoreFillDetail=fillDetail;
   fillDetail=function(d=$('date').value){
     u86CoreFillDetail(d);
+    u86ArrangeInputOrder();
     u86UpdateRatingPoints();
   };
 }
@@ -66,7 +82,7 @@ if(typeof goto==='function'){
   const u86CoreGoto=goto;
   goto=function(id){
     u86CoreGoto(id);
-    if(id==='input')setTimeout(u86UpdateRatingPoints,0);
+    if(id==='input')setTimeout(()=>{u86ArrangeInputOrder();u86UpdateRatingPoints()},0);
     if($('version'))$('version').textContent=`Health Score v${UI086_VERSION}`;
   };
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>goto(b.dataset.v));
@@ -79,6 +95,7 @@ function u86KeepVersion(){
 }
 
 function u86Init(){
+  u86ArrangeInputOrder();
   u86UpdateRatingPoints();
   u86KeepVersion();
   const version=$('version');
