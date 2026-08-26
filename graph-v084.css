@@ -1,7 +1,9 @@
-/* Health Score v0.6.26 — make the 7-day average the visual focus */
+/* Health Score v0.6.32 — trend and forecast emphasis */
 .graph-summary .g84-average-primary{background:#f1f8f4;border-color:#dcefe3}
 .graph-summary .g84-average-primary .label{color:#168c4d;font-weight:900}
 .graph-summary .g84-average-primary .value{font-weight:950}
 .graph-summary .g84-latest-secondary{opacity:.72}
 .graph-legend .g84-actual-legend{opacity:.45}
 .graph-legend .g84-average-legend{font-weight:900;color:#168c4d}
+.graph-legend .forecast{font-weight:850;color:#3478f6}
+.graph-legend .forecast i{height:0;border-top:3px dashed #3478f6;background:transparent}
