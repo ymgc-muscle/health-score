@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH084_VERSION='0.6.31';
+const GRAPH084_VERSION='0.6.32';
 
 function g84EmphasizeTrend(){
   const box=$('chartbox'),svg=box?.querySelector('svg');
@@ -42,7 +42,7 @@ function g84EmphasizeTrend(){
 
   const help=$('chartHelp');
   if(help&&help.innerHTML&&!help.innerHTML.includes('緑の太線＝7日移動平均')){
-    help.innerHTML=`<b>緑の太線＝7日移動平均（トレンド）</b>。橙の細線・点＝日々の実測値、灰色の破線＝目標ライン。<br>${help.innerHTML}`;
+    help.innerHTML=`<b>緑の太線＝7日移動平均（トレンド）</b>。青の破線＝直近のペースを維持した場合の達成見込み、橙の細線・点＝日々の実測値、灰色の破線＝目標ライン。<br>${help.innerHTML}`;
   }
 }
 
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (()=>{
   if(document.querySelector('script[data-ui-v086]'))return;
   const s=document.createElement('script');
-  s.src='ui-v086.js?v=089';
+  s.src='ui-v086.js?v=090';
   s.async=false;
   s.dataset.uiV086='1';
   document.head.appendChild(s);
