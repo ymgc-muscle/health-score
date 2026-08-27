@@ -52,7 +52,58 @@ jobs:
             esac
           fi
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-          echo "Sending Health Score notification: $SLOT"
+          echo "Selected Health Score notification: $SLOT"
+
+      - name: Check notification window (JST)
+        id: guard
+        shell: bash
+        env:
+          TZ: Asia/Tokyo
+        run: |
+          # Manual runs are intentional, so never block them by time of day.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_send=true" >> "$GITHUB_OUTPUT"
+            echo "Manual run: delay guard bypassed."
+            exit 0
+          fi
+
+          SLOT="${{ steps.choose.outputs.slot }}"
+          NOW_HOUR=$(date +%H)
+          NOW_MINUTE=$(date +%M)
+          NOW_MIN=$((10#$NOW_HOUR * 60 + 10#$NOW_MINUTE))
+          NOW_TEXT=$(date '+%Y-%m-%d %H:%M:%S %Z')
+
+          case "$SLOT" in
+            morning)
+              START_MIN=$((6 * 60 + 30))
+              END_MIN=$((8 * 60 + 30))
+              WINDOW='06:30-08:30 JST'
+              ;;
+            evening)
+              START_MIN=$((17 * 60))
+              END_MIN=$((19 * 60))
+              WINDOW='17:00-19:00 JST'
+              ;;
+            night)
+              START_MIN=$((20 * 60 + 30))
+              END_MIN=$((22 * 60 + 30))
+              WINDOW='20:30-22:30 JST'
+              ;;
+            *)
+              echo "Unknown slot for delay guard: $SLOT"
+              exit 1
+              ;;
+          esac
+
+          echo "Current JST: $NOW_TEXT / allowed window for $SLOT: $WINDOW"
+          if (( NOW_MIN >= START_MIN && NOW_MIN <= END_MIN )); then
+            echo "should_send=true" >> "$GITHUB_OUTPUT"
+            echo "Within allowed window: notification will be sent."
+          else
+            echo "should_send=false" >> "$GITHUB_OUTPUT"
+            echo "Outside allowed window: delayed notification will be skipped."
+          fi
 
       - name: Send Firebase push notification
+        if: steps.guard.outputs.should_send == 'true'
         run: node scripts/send-health-score-notification.mjs "${{ steps.choose.outputs.slot }}"
