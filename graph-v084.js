@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH084_VERSION='0.6.32';
+const GRAPH084_VERSION='0.6.33';
 
 function g84EmphasizeTrend(){
   const box=$('chartbox'),svg=box?.querySelector('svg');
@@ -69,8 +69,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 (()=>{
   if(document.querySelector('script[data-ui-v086]'))return;
   const s=document.createElement('script');
-  s.src='ui-v086.js?v=090';
+  s.src='ui-v086.js?v=091';
   s.async=false;
   s.dataset.uiV086='1';
+  document.head.appendChild(s);
+})();
+
+(()=>{
+  if(document.querySelector('script[data-graph-v085]'))return;
+  const s=document.createElement('script');
+  s.src='graph-v085.js?v=091';
+  s.async=false;
+  s.dataset.graphV085='1';
   document.head.appendChild(s);
 })();
