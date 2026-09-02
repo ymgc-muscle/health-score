@@ -2,10 +2,11 @@ name: Health Score Notifications
 
 on:
   schedule:
-    # GitHub Actions cron is UTC. These are 07:00, 17:30, 21:00 JST.
-    - cron: '0 22 * * *'
-    - cron: '30 8 * * *'
-    - cron: '0 12 * * *'
+    # GitHub Actions cron is UTC. Offset from the top of the hour to reduce scheduler congestion.
+    # These are 07:07, 17:37, 21:07 JST.
+    - cron: '7 22 * * *'
+    - cron: '37 8 * * *'
+    - cron: '7 12 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -45,9 +46,9 @@ jobs:
             SLOT="${{ inputs.slot }}"
           else
             case "${{ github.event.schedule }}" in
-              '0 22 * * *') SLOT='morning' ;;
-              '30 8 * * *') SLOT='evening' ;;
-              '0 12 * * *') SLOT='night' ;;
+              '7 22 * * *') SLOT='morning' ;;
+              '37 8 * * *') SLOT='evening' ;;
+              '7 12 * * *') SLOT='night' ;;
               *) echo 'Unknown schedule'; exit 1 ;;
             esac
           fi
@@ -76,18 +77,18 @@ jobs:
           case "$SLOT" in
             morning)
               START_MIN=$((6 * 60 + 30))
-              END_MIN=$((8 * 60 + 30))
-              WINDOW='06:30-08:30 JST'
+              END_MIN=$((9 * 60 + 30))
+              WINDOW='06:30-09:30 JST'
               ;;
             evening)
               START_MIN=$((17 * 60))
-              END_MIN=$((19 * 60))
-              WINDOW='17:00-19:00 JST'
+              END_MIN=$((20 * 60))
+              WINDOW='17:00-20:00 JST'
               ;;
             night)
               START_MIN=$((20 * 60 + 30))
-              END_MIN=$((22 * 60 + 30))
-              WINDOW='20:30-22:30 JST'
+              END_MIN=$((23 * 60 + 30))
+              WINDOW='20:30-23:30 JST'
               ;;
             *)
               echo "Unknown slot for delay guard: $SLOT"
