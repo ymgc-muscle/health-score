@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.33';
+const UI086_VERSION='0.6.34';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 function u86EarnedPoints(k,rating){
