@@ -1,7 +1,16 @@
 'use strict';
 
-const UI086_VERSION='0.6.35';
+const UI086_VERSION='0.6.36';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
+
+const U86_STRENGTH_MENU=[
+  ['ワンハンドロー','10〜12回 × 2セット'],
+  ['フロアプレス','8〜12回 × 2セット'],
+  ['ショルダープレス','8〜10回 × 2セット'],
+  ['アームカール','8〜12回 × 1〜2セット'],
+  ['プランク','30〜45秒 × 2セット'],
+  ['デッドバグ','左右8〜10回 × 2セット']
+];
 
 function u86ExercisePlan(ds){
   const day=dateObj(ds||today()).getDay();
@@ -18,6 +27,10 @@ function u86ExerciseCriteria(ds){
   return `<span class="cg"><b>${max}点</b>：計画どおり休養。軽い運動をした日も満点。</span>`;
 }
 
+function u86StrengthMenuMarkup(){
+  return `<details id="u86StrengthMenu" style="margin:10px 0 12px;padding:10px 12px;border:1px solid #e3e6e8;border-radius:12px;background:#fafafa"><summary style="cursor:pointer;font-weight:800">筋トレメニューを見る <span style="font-weight:600;color:#777">（上半身＋腹筋・15〜20分）</span></summary><div style="margin-top:10px;display:grid;gap:7px">${U86_STRENGTH_MENU.map((x,i)=>`<div style="display:flex;gap:8px;justify-content:space-between;align-items:baseline"><span><b>${i+1}. ${x[0]}</b></span><span style="color:#555;white-space:nowrap">${x[1]}</span></div>`).join('')}</div><div class="help" style="margin-top:9px">火・木は同じメニュー。迷ったら上から順番にやればOKです。</div></details>`;
+}
+
 function u86UpdateExerciseCard(){
   const ds=$('date')?.value||today(),p=u86ExercisePlan(ds);
   const card=document.querySelector('#input .ratecard[data-field="hiit"]');
@@ -26,6 +39,14 @@ function u86UpdateExerciseCard(){
   if(title)title.textContent=p.label;
   const criteriaEl=$('hiitCriteria');
   if(criteriaEl)criteriaEl.innerHTML=u86ExerciseCriteria(ds);
+
+  const body=card.querySelector('.rate-body'),oldMenu=$('u86StrengthMenu');
+  if(p.type==='strength'){
+    if(body&&!oldMenu){
+      const seg=$('hiitSeg');
+      if(seg)seg.insertAdjacentHTML('beforebegin',u86StrengthMenuMarkup());
+    }
+  }else oldMenu?.remove();
 
   const done=$('hiitSeg')?.querySelector('[data-v="done"]');
   const rest=$('hiitSeg')?.querySelector('[data-v="rest"]');
