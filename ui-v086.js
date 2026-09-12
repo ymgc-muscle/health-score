@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.39';
+const UI086_VERSION='0.6.40';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_STRENGTH_MENU=[
@@ -152,8 +152,13 @@ function u86ArrangeInputOrder(){
   const hiitCard=input.querySelector('.ratecard[data-field="hiit"]');
   const stepsCard=input.querySelector('.ratecard[data-field="steps"]');
   const calorieCard=$('caloriesActual')?.closest('.card');
+  const evalParent=rated.parentElement;
 
-  if(hiitCard&&hiitCard.nextElementSibling!==rated)input.insertBefore(hiitCard,rated);
+  // ui-v064 groups rated / steps / hiit inside #ui64EvalWrap.  The old code
+  // called input.insertBefore(hiitCard, rated), which throws when rated is no
+  // longer a direct child of #input.  Always reorder against rated's actual
+  // parent so the exercise refresh can continue.
+  if(hiitCard&&evalParent&&hiitCard.nextElementSibling!==rated)evalParent.insertBefore(hiitCard,rated);
   if(stepsCard&&rated.nextElementSibling!==stepsCard)rated.insertAdjacentElement('afterend',stepsCard);
   if(calorieCard&&stepsCard&&stepsCard.nextElementSibling!==calorieCard)stepsCard.insertAdjacentElement('afterend',calorieCard);
 }
