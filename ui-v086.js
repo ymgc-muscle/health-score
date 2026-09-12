@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.38';
+const UI086_VERSION='0.6.39';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_STRENGTH_MENU=[
@@ -91,6 +91,23 @@ function u86RefreshSelectedDateExercise(){
   u86UpdateStrengthGuide();
   u86UpdateRatingPoints();
   u86EnsureEditableState();
+}
+
+function u86UpdateSelectedDateScore(){
+  const ds=$('date')?.value||today(),e=ent(ds);
+  const score=$('liveScore'),label=$('liveScoreLabel');
+  if(score)score.textContent=scoreForDay(e);
+  if(label)label.textContent=e?.completed?'確定スコア':'入力中スコア';
+}
+
+function u86LoadSelectedDate(ds){
+  if(!ds)return;
+  const dateEl=$('date');
+  if(dateEl&&dateEl.value!==ds)dateEl.value=ds;
+
+  if(typeof fillDetail==='function')fillDetail(ds);
+  u86UpdateSelectedDateScore();
+  u86RefreshSelectedDateExercise();
 }
 
 function u86EarnedPoints(k,rating){
@@ -199,7 +216,10 @@ if(typeof goto==='function'){
   const u86CoreGoto=goto;
   goto=function(id){
     u86CoreGoto(id);
-    if(id==='input')setTimeout(u86RefreshSelectedDateExercise,0);
+    if(id==='input')setTimeout(()=>{
+      u86UpdateSelectedDateScore();
+      u86RefreshSelectedDateExercise();
+    },0);
     if(id==='home')setTimeout(()=>{if(typeof ui82RenderNext==='function')ui82RenderNext()},0);
     if($('version'))$('version').textContent=`Health Score v${UI086_VERSION}`;
   };
@@ -221,6 +241,7 @@ function u86ForceReopen(d){
     const protein=$('proteinActual');
     if(protein)protein.disabled=false;
     if(typeof setAutosave==='function')setAutosave('変更は自動保存されます','ok');
+    u86UpdateSelectedDateScore();
     u86RefreshSelectedDateExercise();
   }
   if(typeof renderAll==='function')renderAll();
@@ -247,10 +268,16 @@ function u86UpdateSettingsLabel(){
 
 function u86BindDateRefresh(){
   const el=$('date');
-  if(!el||el.dataset.u86ExerciseBound==='1')return;
+  if(!el)return;
+  const handler=()=>{
+    const ds=el.value;
+    if(ds)u86LoadSelectedDate(ds);
+  };
+
+  // Coreのonchangeに依存せず、この最終UI層で選択日の読み込みを完結させる。
+  el.onchange=handler;
+  el.oninput=handler;
   el.dataset.u86ExerciseBound='1';
-  el.addEventListener('change',()=>setTimeout(u86RefreshSelectedDateExercise,0));
-  el.addEventListener('input',()=>setTimeout(u86RefreshSelectedDateExercise,0));
 }
 
 function u86KeepVersion(){
@@ -262,6 +289,7 @@ function u86KeepVersion(){
 function u86Init(){
   u86BindDateRefresh();
   u86BindReopenFix();
+  u86UpdateSelectedDateScore();
   u86RefreshSelectedDateExercise();
   u86UpdateSettingsLabel();
   if(typeof ui82RenderNext==='function')ui82RenderNext();
