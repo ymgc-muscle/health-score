@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.37';
+const UI086_VERSION='0.6.38';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_STRENGTH_MENU=[
@@ -29,8 +29,26 @@ function u86ExerciseCriteria(ds){
   return `<span class="cg"><b>${max}点</b>：計画どおり休養。軽い運動をした日も満点。</span>`;
 }
 
-function u86StrengthMenuMarkup(){
-  return `<details id="u86StrengthMenu" style="margin:0 15px 12px;padding:10px 12px;border:1px solid #e3e6e8;border-radius:12px;background:#fafafa"><summary style="cursor:pointer;font-weight:800">筋トレメニューを見る <span style="font-weight:600;color:#777">（上半身＋腹筋・15〜20分）</span></summary><div style="margin-top:10px;display:grid;gap:7px">${U86_STRENGTH_MENU.map((x,i)=>`<div style="display:flex;gap:8px;justify-content:space-between;align-items:baseline"><span><b>${i+1}. ${x[0]}</b></span><span style="color:#555;white-space:nowrap">${x[1]}</span></div>`).join('')}</div><div class="help" style="margin-top:9px">火・木は同じメニュー。迷ったら上から順番にやればOKです。</div></details>`;
+function u86StrengthGuideMarkup(){
+  return `<div class="title">筋トレメニュー</div><div class="sub" style="margin-top:3px">火・木共通・上半身＋腹筋・15〜20分</div><div style="margin-top:11px;display:grid;gap:8px">${U86_STRENGTH_MENU.map((x,i)=>`<div style="display:flex;gap:10px;justify-content:space-between;align-items:baseline"><span><b>${i+1}. ${x[0]}</b></span><span style="color:#555;white-space:nowrap">${x[1]}</span></div>`).join('')}</div><div class="help" style="margin-top:10px">迷ったら上から順番に。記録はこれまでどおり「実施 / 未実施」だけでOKです。</div>`;
+}
+
+function u86UpdateStrengthGuide(){
+  const ds=$('date')?.value||today(),p=u86ExercisePlan(ds);
+  const exerciseCard=document.querySelector('#input .ratecard[data-field="hiit"]');
+  let guide=$('u86StrengthGuideCard');
+  if(p.type!=='strength'){
+    guide?.remove();
+    return;
+  }
+  if(!exerciseCard)return;
+  if(!guide){
+    guide=document.createElement('div');
+    guide.id='u86StrengthGuideCard';
+    guide.className='card';
+  }
+  guide.innerHTML=u86StrengthGuideMarkup();
+  exerciseCard.insertAdjacentElement('afterend',guide);
 }
 
 function u86UpdateExerciseCard(){
@@ -42,13 +60,8 @@ function u86UpdateExerciseCard(){
   const criteriaEl=$('hiitCriteria');
   if(criteriaEl)criteriaEl.innerHTML=u86ExerciseCriteria(ds);
 
-  const oldMenu=card.querySelector('#u86StrengthMenu');
-  if(p.type==='strength'){
-    if(!oldMenu){
-      const body=card.querySelector('.rate-body');
-      if(body)body.insertAdjacentHTML('beforebegin',u86StrengthMenuMarkup());
-    }
-  }else oldMenu?.remove();
+  const oldEmbedded=card.querySelector('#u86StrengthMenu');
+  oldEmbedded?.remove();
 
   const done=$('hiitSeg')?.querySelector('[data-v="done"]');
   const rest=$('hiitSeg')?.querySelector('[data-v="rest"]');
@@ -64,10 +77,20 @@ function u86UpdateExerciseCard(){
   }
 }
 
+function u86EnsureEditableState(){
+  const ds=$('date')?.value||today(),e=ent(ds);
+  if(e?.completed)return;
+  if(typeof setDetailLocked==='function')setDetailLocked(false);
+  const protein=$('proteinActual');
+  if(protein)protein.disabled=false;
+}
+
 function u86RefreshSelectedDateExercise(){
   u86ArrangeInputOrder();
   u86UpdateExerciseCard();
+  u86UpdateStrengthGuide();
   u86UpdateRatingPoints();
+  u86EnsureEditableState();
 }
 
 function u86EarnedPoints(k,rating){
@@ -113,10 +136,7 @@ function u86ArrangeInputOrder(){
   const stepsCard=input.querySelector('.ratecard[data-field="steps"]');
   const calorieCard=$('caloriesActual')?.closest('.card');
 
-  // 朝: 体重（週末は腹囲がこの直後に入る）→ 今日の運動 → 食事評価群
   if(hiitCard&&hiitCard.nextElementSibling!==rated)input.insertBefore(hiitCard,rated);
-
-  // 夜の締め: 食事評価群（最後がたんぱく質）→ 歩数 → 摂取カロリー → メモ
   if(stepsCard&&rated.nextElementSibling!==stepsCard)rated.insertAdjacentElement('afterend',stepsCard);
   if(calorieCard&&stepsCard&&stepsCard.nextElementSibling!==calorieCard)stepsCard.insertAdjacentElement('afterend',calorieCard);
 }
@@ -186,6 +206,39 @@ if(typeof goto==='function'){
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>goto(b.dataset.v));
 }
 
+function u86ForceReopen(d){
+  const e=snapshotEntry(ent(d));
+  e.completed=false;
+  delete e.finalScore;
+  delete e.completedAt;
+  delete e.scoreSnapshot;
+  setEntry(d,e);
+
+  if(d===$('date')?.value){
+    if(typeof setDetailLocked==='function')setDetailLocked(false);
+    fillDetail(d);
+    if(typeof setDetailLocked==='function')setDetailLocked(false);
+    const protein=$('proteinActual');
+    if(protein)protein.disabled=false;
+    if(typeof setAutosave==='function')setAutosave('変更は自動保存されます','ok');
+    u86RefreshSelectedDateExercise();
+  }
+  if(typeof renderAll==='function')renderAll();
+  toast('記録を再開しました');
+}
+
+function u86BindReopenFix(){
+  if(window.__u86ReopenFixBound)return;
+  window.__u86ReopenFixBound=true;
+  document.addEventListener('click',ev=>{
+    const btn=ev.target.closest?.('[data-reopen]');
+    if(!btn)return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    u86ForceReopen(btn.dataset.reopen);
+  },true);
+}
+
 function u86UpdateSettingsLabel(){
   const field=$('score_hiit')?.closest('.field');
   const label=field?.querySelector('label');
@@ -208,6 +261,7 @@ function u86KeepVersion(){
 
 function u86Init(){
   u86BindDateRefresh();
+  u86BindReopenFix();
   u86RefreshSelectedDateExercise();
   u86UpdateSettingsLabel();
   if(typeof ui82RenderNext==='function')ui82RenderNext();
