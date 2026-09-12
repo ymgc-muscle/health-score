@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.36';
+const UI086_VERSION='0.6.37';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_STRENGTH_MENU=[
@@ -13,7 +13,9 @@ const U86_STRENGTH_MENU=[
 ];
 
 function u86ExercisePlan(ds){
-  const day=dateObj(ds||today()).getDay();
+  const s=ds||today();
+  const [y,m,d]=String(s).split('-').map(Number);
+  const day=(Number.isFinite(y)&&Number.isFinite(m)&&Number.isFinite(d))?new Date(y,m-1,d).getDay():new Date().getDay();
   if(day===1||day===3||day===5)return{type:'hiit',label:'HIIT',homeLabel:'HIIT',scheduled:true};
   if(day===2||day===4)return{type:'strength',label:'筋トレ',homeLabel:'筋トレ',scheduled:true};
   return{type:'rest',label:'休養日',homeLabel:'休養',scheduled:false};
@@ -28,7 +30,7 @@ function u86ExerciseCriteria(ds){
 }
 
 function u86StrengthMenuMarkup(){
-  return `<details id="u86StrengthMenu" style="margin:10px 0 12px;padding:10px 12px;border:1px solid #e3e6e8;border-radius:12px;background:#fafafa"><summary style="cursor:pointer;font-weight:800">筋トレメニューを見る <span style="font-weight:600;color:#777">（上半身＋腹筋・15〜20分）</span></summary><div style="margin-top:10px;display:grid;gap:7px">${U86_STRENGTH_MENU.map((x,i)=>`<div style="display:flex;gap:8px;justify-content:space-between;align-items:baseline"><span><b>${i+1}. ${x[0]}</b></span><span style="color:#555;white-space:nowrap">${x[1]}</span></div>`).join('')}</div><div class="help" style="margin-top:9px">火・木は同じメニュー。迷ったら上から順番にやればOKです。</div></details>`;
+  return `<details id="u86StrengthMenu" style="margin:0 15px 12px;padding:10px 12px;border:1px solid #e3e6e8;border-radius:12px;background:#fafafa"><summary style="cursor:pointer;font-weight:800">筋トレメニューを見る <span style="font-weight:600;color:#777">（上半身＋腹筋・15〜20分）</span></summary><div style="margin-top:10px;display:grid;gap:7px">${U86_STRENGTH_MENU.map((x,i)=>`<div style="display:flex;gap:8px;justify-content:space-between;align-items:baseline"><span><b>${i+1}. ${x[0]}</b></span><span style="color:#555;white-space:nowrap">${x[1]}</span></div>`).join('')}</div><div class="help" style="margin-top:9px">火・木は同じメニュー。迷ったら上から順番にやればOKです。</div></details>`;
 }
 
 function u86UpdateExerciseCard(){
@@ -40,11 +42,11 @@ function u86UpdateExerciseCard(){
   const criteriaEl=$('hiitCriteria');
   if(criteriaEl)criteriaEl.innerHTML=u86ExerciseCriteria(ds);
 
-  const body=card.querySelector('.rate-body'),oldMenu=$('u86StrengthMenu');
+  const oldMenu=card.querySelector('#u86StrengthMenu');
   if(p.type==='strength'){
-    if(body&&!oldMenu){
-      const seg=$('hiitSeg');
-      if(seg)seg.insertAdjacentHTML('beforebegin',u86StrengthMenuMarkup());
+    if(!oldMenu){
+      const body=card.querySelector('.rate-body');
+      if(body)body.insertAdjacentHTML('beforebegin',u86StrengthMenuMarkup());
     }
   }else oldMenu?.remove();
 
@@ -60,6 +62,12 @@ function u86UpdateExerciseCard(){
     if(rest){rest.textContent='休養';rest.style.display=''}
     if(missed){missed.style.display='none'}
   }
+}
+
+function u86RefreshSelectedDateExercise(){
+  u86ArrangeInputOrder();
+  u86UpdateExerciseCard();
+  u86UpdateRatingPoints();
 }
 
 function u86EarnedPoints(k,rating){
@@ -147,9 +155,7 @@ if(typeof buildRated==='function'){
   const u86CoreBuildRated=buildRated;
   buildRated=function(e){
     u86CoreBuildRated(e);
-    u86ArrangeInputOrder();
-    u86UpdateExerciseCard();
-    u86UpdateRatingPoints();
+    u86RefreshSelectedDateExercise();
   };
 }
 
@@ -165,9 +171,7 @@ if(typeof fillDetail==='function'){
   const u86CoreFillDetail=fillDetail;
   fillDetail=function(d=$('date').value){
     u86CoreFillDetail(d);
-    u86ArrangeInputOrder();
-    u86UpdateExerciseCard();
-    u86UpdateRatingPoints();
+    u86RefreshSelectedDateExercise();
   };
 }
 
@@ -175,7 +179,7 @@ if(typeof goto==='function'){
   const u86CoreGoto=goto;
   goto=function(id){
     u86CoreGoto(id);
-    if(id==='input')setTimeout(()=>{u86ArrangeInputOrder();u86UpdateExerciseCard();u86UpdateRatingPoints()},0);
+    if(id==='input')setTimeout(u86RefreshSelectedDateExercise,0);
     if(id==='home')setTimeout(()=>{if(typeof ui82RenderNext==='function')ui82RenderNext()},0);
     if($('version'))$('version').textContent=`Health Score v${UI086_VERSION}`;
   };
@@ -188,6 +192,14 @@ function u86UpdateSettingsLabel(){
   if(label)label.textContent='運動（曜日メニュー）';
 }
 
+function u86BindDateRefresh(){
+  const el=$('date');
+  if(!el||el.dataset.u86ExerciseBound==='1')return;
+  el.dataset.u86ExerciseBound='1';
+  el.addEventListener('change',()=>setTimeout(u86RefreshSelectedDateExercise,0));
+  el.addEventListener('input',()=>setTimeout(u86RefreshSelectedDateExercise,0));
+}
+
 function u86KeepVersion(){
   const el=$('version');if(!el)return;
   const expected=`Health Score v${UI086_VERSION}`;
@@ -195,9 +207,8 @@ function u86KeepVersion(){
 }
 
 function u86Init(){
-  u86ArrangeInputOrder();
-  u86UpdateExerciseCard();
-  u86UpdateRatingPoints();
+  u86BindDateRefresh();
+  u86RefreshSelectedDateExercise();
   u86UpdateSettingsLabel();
   if(typeof ui82RenderNext==='function')ui82RenderNext();
   if(typeof renderAppleHome==='function')renderAppleHome();
