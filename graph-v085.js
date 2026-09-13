@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH085_VERSION='0.6.39';
+const GRAPH085_VERSION='0.6.41';
 const G85_Y_STEP=0.5;
 const G85_MIN_TICK_GAP=42;
 
@@ -110,7 +110,7 @@ chart=function(){
 
   const targetNow=targetWeightForDate(today());
   const forecastText=forecast?`　現在ペース ${forecast.weeklyRate>=0?'+':''}${forecast.weeklyRate.toFixed(2)} kg/週　参考到達日 ${g71AxisDateLabel(forecast.goalDate)}`:'';
-  help.innerHTML=`<b>未来側にも日付目盛りを表示し、縦軸は0.5 kg刻みです</b>。近接する日付ラベルは「今日」を優先して自動で間引きます。縦軸の下限は実測・平均・目標・見込みの最低値へ寄せています。<br>実績期間：${g71DateLabel(range.start)}〜${g71DateLabel(range.dataEnd)}　記録 ${stats.actual.length}日${Number.isFinite(targetNow)?`　今日の目標ライン ${targetNow.toFixed(1)} kg`:''}${forecastText}`;
+  help.innerHTML=`<b>未来側にも日付目盛りを表示し、縦軸は0.5 kg刻みです</b>。近接する日付ラベルは「今日」を優先して自動で間引きます。縦軸の下限は実測・平均・目標・見込みの最低値側へ寄せています。<br>実績期間：${g71DateLabel(range.start)}〜${g71DateLabel(range.dataEnd)}　記録 ${stats.actual.length}日${Number.isFinite(targetNow)?`　今日の目標ライン ${targetNow.toFixed(1)} kg`:''}${forecastText}`;
   if(typeof g84EmphasizeTrend==='function')g84EmphasizeTrend();
   if(typeof ui70FixGraph==='function')ui70FixGraph();
   if($('version'))$('version').textContent=`Health Score v${GRAPH085_VERSION}`;
