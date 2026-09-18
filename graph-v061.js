@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH_VERSION='0.6.1';
+const GRAPH_VERSION='0.6.43';
 let graph061Range=localStorage.getItem('health-score-graph-range')||'30';
 
 (function prepareGraphPage(){
@@ -99,8 +99,12 @@ function graphRenderInsights(points,stats,range){
     weekTitle=`${d>=0?'+':''}${d.toFixed(1)} kg`;weekNote='直近7日平均 − その前7日平均';weekCls=good?'good':Math.abs(d)<.1?'':'warn';
   }
   const periodEnd=range.dataEnd,periodDays=Math.max(1,Math.round(daysBetween(range.start,periodEnd))+1),recordDays=stats.actual.length,density=Math.round(recordDays/periodDays*100);
-  let forecastTitle='まだ算出しません',forecastNote='14日以上のデータがあると参考到達日を表示します。';
-  if(typeof weightForecast==='function'){
+  let forecastTitle='算出中',forecastNote='直近の体重トレンドが安定すると表示します。';
+  if(typeof g71ForecastStatus==='function'){
+    const status=g71ForecastStatus(points),f=status.forecast;
+    if(f){forecastTitle=`${fmtShort(f.goalDate)} ごろ`;forecastNote='最近の7日平均の傾向を直線近似した参考値です。';}
+    else if(status.reason)forecastNote=status.reason;
+  }else if(typeof weightForecast==='function'){
     const f=weightForecast();if(f){forecastTitle=`${fmtShort(f)} ごろ`;forecastNote='最近の傾向を直線近似した参考値です。';}
   }
   box.innerHTML=`
