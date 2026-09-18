@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH085_VERSION='0.6.42';
+const GRAPH085_VERSION='0.6.43';
 const G85_Y_STEP=0.5;
 const G85_MIN_TICK_GAP=42;
 
