@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH071_VERSION='0.6.42';
+const GRAPH071_VERSION='0.6.43';
 const G71_WD=['日','月','火','水','木','金','土'];
 const G71_FORECAST_COLOR='#3478f6';
 
