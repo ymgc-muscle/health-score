@@ -1,6 +1,6 @@
 'use strict';
 
-const HOME_TIDY_VERSION='0.6.43';
+const HOME_TIDY_VERSION='0.6.44';
 
 /* Rolling weight average: latest 7 calendar days. Before seven measurements
    exist, show the actual number of measured days. Compare pace against the
@@ -80,8 +80,8 @@ if(typeof appendWeightPace==='function'){
     else if(pace?.state==='ontrack'){text='ほぼ予定通り'}
     const status=typeof g71ForecastStatus==='function'?g71ForecastStatus(graphWeightPoints()):null;
     const fc=status?.forecast?.goalDate||(typeof weightForecast==='function'?weightForecast():null);
-    const pending=status?.reason||'直近の体重トレンドが安定すると参考到達日を表示します。';
-    box.insertAdjacentHTML('beforeend',`<div class="pace ${cls}"><b>${avg.n}日平均：${text}</b>${fc?`<span>現在の傾向からの参考到達日：${fmtShort(fc)}ごろ</span>`:`<span>参考到達日：算出中　${pending}</span>`}</div>`);
+    const pending=status?.reason||'直近の14日平均トレンドが安定すると参考到達日を表示します。';
+    box.insertAdjacentHTML('beforeend',`<div class="pace ${cls}"><b>${avg.n}日平均：${text}</b>${fc?`<span>14日平均トレンドからの参考到達日：${fmtShort(fc)}ごろ</span>`:`<span>参考到達日：算出中　${pending}</span>`}</div>`);
   };
 }
 
