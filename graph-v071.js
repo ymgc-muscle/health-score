@@ -240,7 +240,7 @@ chart=function(){
   const latest=stats.actual.at(-1);
   const latestLabel=latest?`<g pointer-events="none"><rect x="${Math.min(W-84,Math.max(L+2,X(latest.d)-35))}" y="${Math.max(2,Y(latest.w)-35)}" width="70" height="25" rx="8" fill="#fff3e8" stroke="#ffb57d"/><text x="${Math.min(W-49,Math.max(L+37,X(latest.d)))}" y="${Math.max(19,Y(latest.w)-18)}" font-size="13" font-weight="900" text-anchor="middle" fill="#d85600">${latest.w.toFixed(1)} kg</text></g>`:'';
 
-  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="体重推移グラフ。緑は7日移動平均、青の破線は現在のペースからの達成見込みです。点をタップまたは横になぞると日付と体重を確認できます。">${hgrid}${vgrid}${targetSvg}${todayMarker}${forecastSvg}${avg.length>1?`<polyline points="${avgPts}" fill="none" stroke="#19a65b" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`:''}${stats.actual.length>1?`<polyline points="${actualPts}" fill="none" stroke="#ff6a00" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`:''}${circles}${latestLabel}${ticks}<text x="10" y="18" font-size="12" font-weight="700" fill="#737980">kg</text>${g71TooltipSvg()}<rect class="g71-hit" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg>`;
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="体重推移グラフ。緑は7日移動平均、青の破線は14日移動平均のトレンドからの達成見込みです。点をタップまたは横になぞると日付と体重を確認できます。">${hgrid}${vgrid}${targetSvg}${todayMarker}${forecastSvg}${avg.length>1?`<polyline points="${avgPts}" fill="none" stroke="#19a65b" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`:''}${stats.actual.length>1?`<polyline points="${actualPts}" fill="none" stroke="#ff6a00" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`:''}${circles}${latestLabel}${ticks}<text x="10" y="18" font-size="12" font-weight="700" fill="#737980">kg</text>${g71TooltipSvg()}<rect class="g71-hit" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg>`;
 
   const svg=box.querySelector('svg');
   const hit=svg?.querySelector('.g71-hit'),cursor=svg?.querySelector('#g71Cursor');
@@ -248,7 +248,7 @@ chart=function(){
   g71BindCursor(svg,stats.actual,X,Y,{W,H,L,R,T,B});
 
   const targetNow=targetWeightForDate(today());
-  const forecastText=forecast?`　現在ペース ${forecast.weeklyRate>=0?'+':''}${forecast.weeklyRate.toFixed(2)} kg/週　参考到達日 ${g71AxisDateLabel(forecast.goalDate)}`:'';
+  const forecastText=forecast?`　14日平均ベース ${forecast.weeklyRate>=0?'+':''}${forecast.weeklyRate.toFixed(2)} kg/週　参考到達日 ${g71AxisDateLabel(forecast.goalDate)}`:'';
   help.innerHTML=`<b>横軸の日付は表示期間に応じて間引いています</b>。正確な日付は点をタップ、またはグラフ上を横になぞって確認できます。<br>実績期間：${g71DateLabel(range.start)}〜${g71DateLabel(range.dataEnd)}　記録 ${stats.actual.length}日${Number.isFinite(targetNow)?`　今日の目標ライン ${targetNow.toFixed(1)} kg`:''}${forecastText}`;
   if(typeof ui70FixGraph==='function')ui70FixGraph();
 };
