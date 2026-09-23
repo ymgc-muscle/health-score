@@ -1,8 +1,11 @@
 'use strict';
 
-const GRAPH071_VERSION='0.6.43';
+const GRAPH071_VERSION='0.6.44';
 const G71_WD=['日','月','火','水','木','金','土'];
 const G71_FORECAST_COLOR='#3478f6';
+const G71_FORECAST_AVG_DAYS=14;
+const G71_FORECAST_LOOKBACK_DAYS=28;
+const G71_FORECAST_MIN_SAMPLES=10;
 
 function g71DateLabel(ds){
   const d=dateObj(ds);
@@ -59,25 +62,34 @@ function g71EnsureForecastLegend(){
   legend.appendChild(span);
 }
 
+function g71ForecastAverageSeries(points){
+  const days=G71_FORECAST_AVG_DAYS;
+  return points.map(p=>{
+    const from=graphDateAdd(p.d,-(days-1));
+    const vals=points.filter(x=>x.d>=from&&x.d<=p.d).map(x=>x.w);
+    return{d:p.d,w:vals.reduce((a,b)=>a+b,0)/vals.length,n:vals.length};
+  });
+}
+
 function g71ForecastStatus(points){
   const p=st.settings,sw=+p.startWeight,gw=+p.goalWeight;
   const pending=reason=>({forecast:null,reason});
   if(!Number.isFinite(sw)||!Number.isFinite(gw)||sw===gw){
     return pending('開始体重と目標体重の設定を確認してください。');
   }
-  if(!Array.isArray(points)||points.length<8){
-    return pending('体重記録がもう少し必要です。7日平均の傾向を作れるまで待ちます。');
+  if(!Array.isArray(points)||points.length<G71_FORECAST_MIN_SAMPLES){
+    return pending('14日平均を作るための体重記録がもう少し必要です。');
   }
 
-  const avg=graphAvgSeries(points).filter(x=>x.d<=today());
+  const avg=g71ForecastAverageSeries(points).filter(x=>x.d<=today()&&x.n>=G71_FORECAST_MIN_SAMPLES);
   const last=avg.at(-1);
-  if(!last||g71Days(points[0].d,last.d)<13){
-    return pending('記録期間がまだ短いため算出できません。2週間ほどの推移が必要です。');
+  if(!last||g71Days(points[0].d,last.d)<20){
+    return pending('予測には3週間ほどの推移が必要です。記録が増えると自動で算出します。');
   }
 
-  const recent=avg.filter(x=>x.n>=4&&g71Days(x.d,last.d)>=0&&g71Days(x.d,last.d)<=21);
-  if(recent.length<5||g71Days(recent[0].d,last.d)<7){
-    return pending('直近の記録が少ないため、7日平均の傾向をまだ安定して計算できません。');
+  const recent=avg.filter(x=>g71Days(x.d,last.d)>=0&&g71Days(x.d,last.d)<=G71_FORECAST_LOOKBACK_DAYS);
+  if(recent.length<8||g71Days(recent[0].d,last.d)<10){
+    return pending('直近の記録が少ないため、14日平均の傾向をまだ安定して計算できません。');
   }
 
   const x0=dateObj(recent[0].d);
@@ -89,11 +101,11 @@ function g71ForecastStatus(points){
 
   const dir=Math.sign(gw-sw);
   if((dir<0&&last.w<=gw)||(dir>0&&last.w>=gw)){
-    return pending('現在の7日平均は目標体重に到達しています。');
+    return pending('現在の14日平均は目標体重に到達しています。');
   }
   if((dir<0&&slope>=-.005)||(dir>0&&slope<=.005)){
     const direction=dir<0?'減量':'増量';
-    return pending(`直近の7日平均が${direction}方向のトレンドになっていないため、達成見込みを表示していません。`);
+    return pending(`直近の14日平均が${direction}方向のトレンドになっていないため、達成見込みを表示していません。`);
   }
 
   const days=(gw-last.w)/slope;
@@ -101,10 +113,17 @@ function g71ForecastStatus(points){
     return pending('直近の体重トレンドから有効な到達日を計算できません。');
   }
   if(days>365){
-    return pending('現在のペースでは1年以内の到達日を算出できません。');
+    return pending('現在の14日平均ベースのペースでは1年以内の到達日を算出できません。');
   }
   const goalDate=graphDateAdd(last.d,Math.ceil(days));
-  return{forecast:{startDate:last.d,startWeight:last.w,slope,weeklyRate:slope*7,goalDate,goalWeight:gw},reason:''};
+  return{
+    forecast:{
+      startDate:last.d,startWeight:last.w,slope,weeklyRate:slope*7,
+      goalDate,goalWeight:gw,averageDays:G71_FORECAST_AVG_DAYS,
+      lookbackDays:G71_FORECAST_LOOKBACK_DAYS
+    },
+    reason:''
+  };
 }
 function g71ForecastModel(points){
   return g71ForecastStatus(points).forecast;
