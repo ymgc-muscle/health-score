@@ -191,7 +191,10 @@ function cp87RenderCard(){
 }
 function cp87Confetti(){
   let s='<div class="cp87-confetti" aria-hidden="true">';
-  for(let i=0;i<28;i++)s+='<i style="--i:'+i+'"></i>';
+  for(let i=0;i<28;i++){
+    const x=(i*37)%100,drift=((i%7)-3)*8,duration=(2.4+(i%5)*.22).toFixed(2),delay=-((i%8)*.18).toFixed(2),hue=(i*47)%360;
+    s+='<i style="--x:'+x+'%;--drift:'+drift+'px;--dur:'+duration+'s;--delay:'+delay+'s;--h:'+hue+'"></i>';
+  }
   return s+'</div>';
 }
 function cp87Celebrate(result){
