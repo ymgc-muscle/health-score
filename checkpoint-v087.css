@@ -45,15 +45,13 @@
 }
 .cp87-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .cp87-confetti i{
-  --x:calc((var(--i) * 37) % 100);
-  position:absolute;left:calc(var(--x) * 1%);top:-8%;width:9px;height:18px;border-radius:3px;
-  background:hsl(calc(var(--i) * 47deg),78%,58%);
-  transform:rotate(calc(var(--i) * 31deg));
-  animation:cp87Fall calc(2.4s + (var(--i) % 5) * .22s) linear calc((var(--i) % 8) * -.18s) infinite
+  position:absolute;left:var(--x);top:-8%;width:9px;height:18px;border-radius:3px;
+  background:hsl(var(--h),78%,58%);
+  animation:cp87Fall var(--dur) linear var(--delay) infinite
 }
 @keyframes cp87Fall{
   0%{transform:translate3d(0,-12vh,0) rotate(0deg)}
-  100%{transform:translate3d(calc((var(--i) % 7 - 3) * 8px),112vh,0) rotate(720deg)}
+  100%{transform:translate3d(var(--drift),112vh,0) rotate(720deg)}
 }
 @keyframes cp87Pop{0%{transform:scale(.82) translateY(18px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 @keyframes cp87FadeIn{from{opacity:0}to{opacity:1}}
