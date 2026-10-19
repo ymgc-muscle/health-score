@@ -1,6 +1,6 @@
 'use strict';
 
-const CP087_VERSION='0.6.45';
+const CP087_VERSION='0.6.46';
 const CP087_PLAN_VERSION=1;
 
 function cp87Round(n){return Math.round(Number(n)*10)/10}
@@ -52,7 +52,7 @@ function cp87Average(days,minSamples){
     return ds>=from&&ds<=end&&e&&e.weight!=null&&Number.isFinite(+e.weight);
   }).map(function(pair){return +pair[1].weight});
   const avg=rows.length?rows.reduce(function(a,b){return a+b},0)/rows.length:null;
-  return{avg:avg,n:rows.length,ready:rows.length>=minSamples,days:days,minSamples:minSamples};
+  return{avg:avg,n:rows.length,ready:rows.length>=minSamples,complete:rows.length>=days,days:days,minSamples:minSamples};
 }
 function cp87Reached(value,target,dir){
   if(!Number.isFinite(value))return false;
@@ -101,6 +101,29 @@ function cp87Next(plan){
   const done=new Set(plan.achieved||[]);
   return plan.thresholds.find(function(t){return !done.has(cp87Key(t))})??null;
 }
+
+function cp87AverageLabel(plan,avg){
+  if(!plan)return'平均';
+  if(avg&&avg.ready&&!avg.complete)return'暫定'+plan.averageDays+'日平均';
+  return plan.averageDays+'日平均';
+}
+function cp87SegmentStart(plan,next){
+  if(!plan||next==null)return null;
+  const i=plan.thresholds.findIndex(function(t){return cp87Key(t)===cp87Key(next)});
+  if(i>0)return plan.thresholds[i-1];
+  const sw=+st.settings.startWeight;
+  return Number.isFinite(sw)?sw:null;
+}
+function cp87Progress(avg,from,target,dir){
+  if(!avg||!avg.ready||!Number.isFinite(avg.avg)||!Number.isFinite(from)||!Number.isFinite(target)||from===target)return null;
+  const total=Math.abs(target-from);
+  const moved=dir<0?from-avg.avg:avg.avg-from;
+  return clamp(moved/total,0,1);
+}
+function cp87TodayAchievement(plan){
+  const a=plan&&plan.lastAchievement;
+  return a&&a.date===today()&&Number.isFinite(+a.target)?a:null;
+}
 function cp87ExpectedDate(target){
   const p=st.settings,sw=+p.startWeight,gw=+p.goalWeight;
   if(!p.startDate||!p.goalDate||!Number.isFinite(sw)||!Number.isFinite(gw)||sw===gw)return null;
@@ -121,12 +144,13 @@ function cp87Evaluate(){
   if(!crossed.length)return null;
   crossed.forEach(function(t){done.add(cp87Key(t))});
   plan.achieved=Array.from(done);
+  const next=cp87Next(plan),target=crossed[crossed.length-1];
+  plan.lastAchievement={date:today(),target:target,count:crossed.length,final:next==null};
   st.settings.weightCheckpointPlan=plan;
   saveState();
-  const next=cp87Next(plan);
   return{
     plan:plan,
-    target:crossed[crossed.length-1],
+    target:target,
     crossedCount:crossed.length,
     next:next,
     final:next==null,
@@ -169,25 +193,40 @@ function cp87RenderCard(){
 
   card.classList.remove('done');
   const remain=cp87Remaining(avg,next,dir),expected=cp87ExpectedDate(next);
+  const avgLabel=cp87AverageLabel(plan,avg),segmentStart=cp87SegmentStart(plan,next);
+  const progress=cp87Progress(avg,segmentStart,next,dir),pct=progress==null?0:Math.round(progress*100);
+  const fresh=cp87TodayAchievement(plan);
   let status;
   if(avg.ready){
-    status=plan.averageDays+'日平均 '+avg.avg.toFixed(1)+' kg';
+    status=avgLabel+' '+avg.avg.toFixed(1)+' kg';
     if(remain!=null)status+=' ・ あと '+remain.toFixed(1)+' kg';
   }else{
     status=plan.averageDays+'日平均の判定データを集めています（'+avg.n+' / '+plan.minSamples+'日）';
   }
+  const provisional=avg.ready&&!avg.complete
+    ?'<div class="cp87-note cp87-provisional">暫定表示：直近'+plan.averageDays+'日分がそろうまでは、現在ある'+avg.n+'日分で平均しています。</div>'
+    :'';
   const shortNote=plan.mode==='short'
     ?'<div class="cp87-note">短期判定のため、水分変動の影響を受けやすい参考値です。</div>'
     :'';
   const expectedText=expected
     ?'<div class="cp87-note">目標ライン上の通過目安 '+fmtShort(expected)+'　<span>※期限ではありません</span></div>'
     :'';
+  const freshText=fresh
+    ?'<div class="cp87-new">🎉 NEW! '+cp87Key(+fresh.target)+' kg CHECKPOINT CLEAR</div>'
+    :'';
+  const progressText=progress==null?'判定準備中':pct+'%';
+  const progressHtml=Number.isFinite(segmentStart)
+    ?'<div class="cp87-progress"><div class="cp87-progress-head"><span>'+cp87Key(segmentStart)+' kg</span><b>'+progressText+'</b><span>'+cp87Key(next)+' kg</span></div><div class="cp87-progress-track"><i style="width:'+pct+'%"></i></div></div>'
+    :'';
   card.innerHTML='<div class="cp87-kicker">NEXT WEIGHT CHECKPOINT</div>'+
+    freshText+
     '<div class="cp87-head"><div><div class="cp87-label">次の目標</div><div class="cp87-target">'+cp87Key(next)+'<small>kg</small></div></div>'+
     '<div class="cp87-badge">'+achieved+' / '+total+' 達成</div></div>'+
     '<div class="cp87-status">'+status+'</div>'+
+    progressHtml+
     '<div class="cp87-rule">'+plan.modeLabel+'</div>'+
-    expectedText+shortNote;
+    provisional+expectedText+shortNote;
 }
 function cp87Confetti(){
   let s='<div class="cp87-confetti" aria-hidden="true">';
