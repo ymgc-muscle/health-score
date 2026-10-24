@@ -1,6 +1,6 @@
 'use strict';
 
-const CP087_VERSION='0.6.46';
+const CP087_VERSION='0.6.47';
 const CP087_PLAN_VERSION=1;
 
 function cp87Round(n){return Math.round(Number(n)*10)/10}
@@ -133,6 +133,38 @@ function cp87ExpectedDate(target){
   d.setDate(d.getDate()+Math.round(total*ratio));
   return localDateString(d);
 }
+function cp87RepairTodayAchievement(plan){
+  if(!plan||!plan.lastAchievement||plan.lastAchievement.date!==today())return false;
+  const avg=cp87Average(plan.averageDays,plan.minSamples);
+  if(!avg.ready)return false;
+  const dir=Math.sign(+st.settings.goalWeight-+st.settings.startWeight);
+  const count=Math.max(1,Math.min((plan.achieved||[]).length,Number(plan.lastAchievement.count)||1));
+  const recent=(plan.achieved||[]).slice(-count);
+  const supported=recent.filter(function(k){return cp87Reached(avg.avg,+k,dir)});
+  if(supported.length===recent.length)return false;
+  const remove=new Set(recent.filter(function(k){return !supported.includes(k)}));
+  plan.achieved=(plan.achieved||[]).filter(function(k){return !remove.has(k)});
+  if(supported.length){
+    plan.lastAchievement={
+      ...plan.lastAchievement,
+      target:+supported[supported.length-1],
+      count:supported.length,
+      final:cp87Next(plan)==null,
+      corrected:true
+    };
+  }else{
+    delete plan.lastAchievement;
+  }
+  st.settings.weightCheckpointPlan=plan;
+  saveState();
+  return true;
+}
+
+function cp87WeightEditing(){
+  const el=document.activeElement;
+  return !!el&&(el.id==='weight'||el.id==='homeWeight');
+}
+
 function cp87Evaluate(){
   const ensured=cp87EnsurePlan(),plan=ensured.plan;
   if(!plan||ensured.created)return null;
@@ -145,7 +177,13 @@ function cp87Evaluate(){
   crossed.forEach(function(t){done.add(cp87Key(t))});
   plan.achieved=Array.from(done);
   const next=cp87Next(plan),target=crossed[crossed.length-1];
-  plan.lastAchievement={date:today(),target:target,count:crossed.length,final:next==null};
+  plan.lastAchievement={
+    date:today(),
+    target:target,
+    count:crossed.length,
+    final:next==null,
+    sourceWeight:Number.isFinite(+ent(today())?.weight)?+ent(today()).weight:null
+  };
   st.settings.weightCheckpointPlan=plan;
   saveState();
   return{
@@ -274,6 +312,9 @@ function cp87Celebrate(result){
   overlay.addEventListener('click',function(ev){if(ev.target===overlay)close()});
 }
 function cp87Refresh(){
+  if(cp87WeightEditing())return;
+  const ensured=cp87EnsurePlan(),plan=ensured.plan;
+  if(plan)cp87RepairTodayAchievement(plan);
   const result=cp87Evaluate();
   cp87RenderCard();
   if(result)setTimeout(function(){cp87Celebrate(result)},80);
@@ -287,6 +328,16 @@ if(typeof renderAppleHome==='function'){
 }
 function cp87Init(){
   cp87Refresh();
+  const bindWeightFinalize=function(id){
+    const el=$(id);
+    if(!el||el.dataset.cp87FinalizeBound)return;
+    el.dataset.cp87FinalizeBound='1';
+    const done=function(){setTimeout(cp87Refresh,280)};
+    el.addEventListener('change',done);
+    el.addEventListener('blur',done);
+  };
+  bindWeightFinalize('weight');
+  bindWeightFinalize('homeWeight');
   if($('version'))$('version').textContent='Health Score v'+CP087_VERSION;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cp87Init);else cp87Init();
