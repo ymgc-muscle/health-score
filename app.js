@@ -196,7 +196,13 @@ function renderQuick(e){
     <div class="quick-row"><div class="quick-row-title"><span>歩数</span><span class="mini">${earnedFor('steps',e)}/${maxFor('steps')}点</span></div><input id="homeSteps" type="number" step="100" value="${e.steps??''}" placeholder="歩"></div>
     <div class="quick-row"><div class="quick-row-title"><span>HIIT / 運動</span><span class="mini">${earnedFor('hiit',e)}/${maxFor('hiit')}点</span></div>${quickSeg('hiit',e)}</div>
   </div>`;
-  $('openDetail').onclick=()=>goto('input');$('homeWeight').oninput=()=>quickNumericSave('weight',$('homeWeight').value);$('homeSteps').oninput=()=>quickNumericSave('steps',$('homeSteps').value);
+  $('openDetail').onclick=()=>goto('input');
+  const homeWeight=$('homeWeight');
+  homeWeight.oninput=()=>{};
+  const commitHomeWeight=()=>quickNumericSave('weight',homeWeight.value);
+  homeWeight.onchange=commitHomeWeight;
+  homeWeight.onblur=commitHomeWeight;
+  $('homeSteps').oninput=()=>quickNumericSave('steps',$('homeSteps').value);
   q.querySelectorAll('[data-home-k] button').forEach(btn=>btn.onclick=()=>quickRatingSave(btn.parentElement.dataset.homeK,btn.dataset.v));
   q.querySelectorAll('[data-apply-suggest]').forEach(btn=>btn.onclick=()=>quickRatingSave(btn.dataset.applySuggest,btn.dataset.v));
   if(e.completed)q.querySelectorAll('input,button:not(#openDetail)').forEach(el=>el.disabled=true);
@@ -318,7 +324,11 @@ function bindEvents(){
   $('date').value=today();$('date').onchange=()=>fillDetail($('date').value);
   $('prevMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCalendar()};$('nextMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCalendar()};
   document.addEventListener('click',ev=>{const acc=ev.target.closest('.acc-head');if(acc){acc.closest('.ratecard').classList.toggle('open');return}const btn=ev.target.closest('#input .seg button');if(btn){const seg=btn.parentElement;seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');updateLiveScore();scheduleDetailSave(80);return}const sug=ev.target.closest('[data-detail-suggest]');if(sug){const seg=document.querySelector(`#rated [data-k="${sug.dataset.detailSuggest}"]`);seg?.querySelector(`[data-v="${sug.dataset.v}"]`)?.click()}});
-  ['weight','steps','caloriesActual','proteinActual','memo'].forEach(id=>$(id).addEventListener('input',()=>{updateLiveScore();scheduleDetailSave(id==='memo'?450:220)}));
+  ['steps','caloriesActual','proteinActual','memo'].forEach(id=>$(id).addEventListener('input',()=>{updateLiveScore();scheduleDetailSave(id==='memo'?450:220)}));
+  $('weight').addEventListener('input',()=>{updateLiveScore();setAutosave('入力中…','saving')});
+  const commitDetailWeight=()=>scheduleDetailSave(0);
+  $('weight').addEventListener('change',commitDetailWeight);
+  $('weight').addEventListener('blur',commitDetailWeight);
   $('rated').addEventListener('input',ev=>{if(ev.target.matches('[data-mealkcal]')){updateDetailSuggestions();scheduleDetailSave(220)}});$('rated').addEventListener('change',ev=>{if(ev.target.matches('[data-balanced]')){updateDetailSuggestions();scheduleDetailSave(100)}});
   $('hiitSeg').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{$('hiitSeg').querySelectorAll('button').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');updateLiveScore();scheduleDetailSave(80)});
   ['setCalorieTarget','setStepTarget','setProteinTarget'].forEach(id=>$(id).oninput=drawSettingsGuide);Object.keys(DEFAULT_WEIGHTS).forEach(k=>$(`score_${k}`).oninput=drawScoreTotal);$('saveSettings').onclick=saveSettings;
