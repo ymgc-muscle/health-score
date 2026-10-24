@@ -1,6 +1,6 @@
 'use strict';
 
-const WAIST_VERSION='0.6.25';
+const WAIST_VERSION='0.6.48';
 
 function w83Store(){
   if(!st.waistMeasurements||typeof st.waistMeasurements!=='object'||Array.isArray(st.waistMeasurements))st.waistMeasurements={};
