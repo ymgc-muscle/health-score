@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.46';
+const UI086_VERSION='0.6.47';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_DEFAULT_STRENGTH_MENU=[
