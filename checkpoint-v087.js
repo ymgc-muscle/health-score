@@ -1,6 +1,6 @@
 'use strict';
 
-const CP087_VERSION='0.6.47';
+const CP087_VERSION='0.6.49';
 const CP087_PLAN_VERSION=1;
 
 function cp87Round(n){return Math.round(Number(n)*10)/10}
@@ -56,7 +56,8 @@ function cp87Average(days,minSamples){
 }
 function cp87Reached(value,target,dir){
   if(!Number.isFinite(value))return false;
-  return dir<0?value<=target+1e-9:value>=target-1e-9;
+  const shown=cp87Round(value),checkpoint=cp87Round(target);
+  return dir<0?shown<=checkpoint:shown>=checkpoint;
 }
 function cp87CreatePlan(signature){
   const p=st.settings,sw=+p.startWeight,gw=+p.goalWeight;
@@ -116,9 +117,10 @@ function cp87SegmentStart(plan,next){
 }
 function cp87Progress(avg,from,target,dir){
   if(!avg||!avg.ready||!Number.isFinite(avg.avg)||!Number.isFinite(from)||!Number.isFinite(target)||from===target)return null;
-  const total=Math.abs(target-from);
-  const moved=dir<0?from-avg.avg:avg.avg-from;
-  return clamp(moved/total,0,1);
+  const shown=cp87Round(avg.avg),start=cp87Round(from),checkpoint=cp87Round(target);
+  const total=Math.abs(checkpoint-start);
+  const moved=dir<0?start-shown:shown-start;
+  return total>0?clamp(moved/total,0,1):null;
 }
 function cp87TodayAchievement(plan){
   const a=plan&&plan.lastAchievement;
@@ -197,7 +199,8 @@ function cp87Evaluate(){
 }
 function cp87Remaining(avg,target,dir){
   if(!avg.ready||!Number.isFinite(avg.avg))return null;
-  return Math.max(0,dir<0?avg.avg-target:target-avg.avg);
+  const shown=cp87Round(avg.avg),checkpoint=cp87Round(target);
+  return Math.max(0,dir<0?shown-checkpoint:checkpoint-shown);
 }
 function cp87RenderCard(){
   const box=$('appleHome');
