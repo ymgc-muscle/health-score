@@ -1,7 +1,8 @@
 'use strict';
 
-const GRAPH_VERSION='0.6.44';
+const GRAPH_VERSION='0.6.50';
 let graph061Range=localStorage.getItem('health-score-graph-range')||'30';
+let graph061Offset=0;
 
 (function prepareGraphPage(){
   const section=$('chart');
@@ -10,11 +11,13 @@ let graph061Range=localStorage.getItem('health-score-graph-range')||'30';
     <div class="graph-toolbar">
       <div><div class="title">体重トレンド</div><div class="sub">単日の増減より、平均と目標ラインで判断</div></div>
       <div class="graph-range" id="graphRange">
+        <button type="button" data-range="7">1週間</button>
         <button type="button" data-range="14">2週間</button>
         <button type="button" data-range="30">1か月</button>
         <button type="button" data-range="all">全期間</button>
       </div>
     </div>
+    <div class="graph-period-nav" id="graphPeriodNav" aria-label="表示期間の移動"></div>
     <div class="graph-summary" id="graphSummary"></div>
     <div class="card graph-main-card">
       <div class="graph-legend"><span><i></i>実測</span><span class="avg"><i></i>7日平均</span><span class="target"><i></i>目標ライン</span></div>
@@ -24,6 +27,7 @@ let graph061Range=localStorage.getItem('health-score-graph-range')||'30';
     <div class="card"><div class="title">トレンドの読み取り</div><div class="graph-insights" id="graphInsights" style="margin-top:10px"></div><div class="graph-progress" id="graphProgress"></div></div>`;
   section.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>{
     graph061Range=b.dataset.range;
+    graph061Offset=0;
     localStorage.setItem('health-score-graph-range',graph061Range);
     chart();
   });
@@ -37,16 +41,30 @@ function graphWeightPoints(){
     .sort((a,b)=>a.d.localeCompare(b.d));
 }
 function graphDateAdd(ds,n){const d=dateObj(ds);d.setDate(d.getDate()+n);return localDateString(d)}
+function graphPeriodDays(){return graph061Range==='7'?7:graph061Range==='14'?14:graph061Range==='30'?30:null}
 function graphRangeDates(points){
-  const end=today();
+  const todayDate=today();
   if(graph061Range==='all'){
-    const first=points[0]?.d||st.settings.startDate||end;
-    const start=[first,st.settings.startDate].filter(Boolean).sort()[0]||end;
-    const finish=[end,st.settings.goalDate].filter(Boolean).sort().at(-1)||end;
-    return{start,end:finish,dataEnd:end};
+    const first=points[0]?.d||st.settings.startDate||todayDate;
+    const start=[first,st.settings.startDate].filter(Boolean).sort()[0]||todayDate;
+    const finish=[todayDate,st.settings.goalDate].filter(Boolean).sort().at(-1)||todayDate;
+    return{start,end:finish,dataEnd:todayDate,historical:false};
   }
-  const n=graph061Range==='14'?14:30;
-  return{start:graphDateAdd(end,-(n-1)),end,dataEnd:end};
+  const n=graphPeriodDays()||30;
+  const dataEnd=graphDateAdd(todayDate,-graph061Offset*n);
+  return{start:graphDateAdd(dataEnd,-(n-1)),end:dataEnd,dataEnd,historical:graph061Offset>0};
+}
+function graphRenderPeriodNav(range,points){
+  const box=$('graphPeriodNav');if(!box)return;
+  if(graph061Range==='all'){box.innerHTML='';box.style.display='none';return}
+  box.style.display='grid';
+  const first=points[0]?.d||range.start;
+  const canBack=range.start>first;
+  const label=range.start===range.dataEnd?fmtShort(range.start):`${fmtShort(range.start)}〜${fmtShort(range.dataEnd)}`;
+  box.innerHTML=`<button type="button" id="graphPeriodPrev" ${canBack?'':'disabled'}>‹ 前の期間</button><div><b>${label}</b><span>${graph061Offset===0?'現在':'過去の期間'}</span></div><button type="button" id="graphPeriodNext" ${graph061Offset===0?'disabled':''}>${graph061Offset===1?'今日へ':'次の期間 ›'}</button>`;
+  const prev=$('graphPeriodPrev'),next=$('graphPeriodNext');
+  if(prev)prev.onclick=()=>{graph061Offset+=1;chart()};
+  if(next)next.onclick=()=>{graph061Offset=Math.max(0,graph061Offset-1);chart()};
 }
 function graphAvgSeries(points){
   return points.map(p=>{
@@ -59,9 +77,10 @@ function graphAverageBetween(points,start,end){
   return vals.length?{avg:vals.reduce((a,b)=>a+b,0)/vals.length,n:vals.length}:null;
 }
 function graphSelectedStats(points,range){
-  const actual=points.filter(p=>p.d>=range.start&&p.d<=range.dataEnd),latest=points.filter(p=>p.d<=today()).at(-1)||points.at(-1)||null;
-  const avg7=graphAverageBetween(points,graphDateAdd(today(),-6),today());
-  const prev7=graphAverageBetween(points,graphDateAdd(today(),-13),graphDateAdd(today(),-7));
+  const end=range.dataEnd;
+  const actual=points.filter(p=>p.d>=range.start&&p.d<=end),latest=points.filter(p=>p.d<=end).at(-1)||null;
+  const avg7=graphAverageBetween(points,graphDateAdd(end,-6),end);
+  const prev7=graphAverageBetween(points,graphDateAdd(end,-13),graphDateAdd(end,-7));
   return{actual,latest,avg7,prev7};
 }
 function graphGoalRemaining(latest){
@@ -83,16 +102,16 @@ function graphProgressPercent(latest){
   const sw=+st.settings.startWeight,gw=+st.settings.goalWeight;if(!latest||!Number.isFinite(sw)||!Number.isFinite(gw)||sw===gw)return null;
   return clamp((latest.w-sw)/(gw-sw)*100,0,100);
 }
-function graphPaceText(stats){
-  const avg=stats.avg7,target=targetWeightForDate(today()),sw=+st.settings.startWeight,gw=+st.settings.goalWeight;
+function graphPaceText(stats,range){
+  const end=range?.dataEnd||today(),avg=stats.avg7,target=targetWeightForDate(end),sw=+st.settings.startWeight,gw=+st.settings.goalWeight;
   if(!avg||!Number.isFinite(target)||!Number.isFinite(sw)||!Number.isFinite(gw))return{title:'判定待ち',note:'体重データが増えると目標ラインとの差を表示します。',cls:''};
   const delta=avg.avg-target,dir=Math.sign(gw-sw),ahead=dir<0?delta<-.2:delta>.2,behind=dir<0?delta>.2:delta<-.2;
-  if(ahead)return{title:`${Math.abs(delta).toFixed(1)} kg先行`,note:`7日平均が今日の目標ラインより良い位置です。`,cls:'good'};
-  if(behind)return{title:`${Math.abs(delta).toFixed(1)} kg遅れ`,note:`7日平均が今日の目標ラインから離れています。単日値ではなく数日で確認します。`,cls:'warn'};
-  return{title:'ほぼ予定通り',note:`7日平均と今日の目標ラインの差は ${Math.abs(delta).toFixed(1)} kg です。`,cls:'good'};
+  if(ahead)return{title:`${Math.abs(delta).toFixed(1)} kg先行`,note:`7日平均が期間末の目標ラインより良い位置です。`,cls:'good'};
+  if(behind)return{title:`${Math.abs(delta).toFixed(1)} kg遅れ`,note:`7日平均が期間末の目標ラインから離れています。単日値ではなく数日で確認します。`,cls:'warn'};
+  return{title:'ほぼ予定通り',note:`7日平均と期間末の目標ラインの差は ${Math.abs(delta).toFixed(1)} kg です。`,cls:'good'};
 }
 function graphRenderInsights(points,stats,range){
-  const box=$('graphInsights'),pace=graphPaceText(stats);
+  const box=$('graphInsights'),pace=graphPaceText(stats,range);
   let weekTitle='比較待ち',weekNote='前週分の記録が増えると比較できます。',weekCls='';
   if(stats.avg7&&stats.prev7){
     const d=stats.avg7.avg-stats.prev7.avg,sw=+st.settings.startWeight,gw=+st.settings.goalWeight,good=(gw<sw&&d<0)||(gw>sw&&d>0);
@@ -100,7 +119,10 @@ function graphRenderInsights(points,stats,range){
   }
   const periodEnd=range.dataEnd,periodDays=Math.max(1,Math.round(daysBetween(range.start,periodEnd))+1),recordDays=stats.actual.length,density=Math.round(recordDays/periodDays*100);
   let forecastTitle='算出中',forecastNote='直近の体重トレンドが安定すると表示します。';
-  if(typeof g71ForecastStatus==='function'){
+  if(range.historical){
+    forecastTitle='過去表示';
+    forecastNote='参考到達日は「今日」を含む期間へ戻すと表示します。';
+  }else if(typeof g71ForecastStatus==='function'){
     const status=g71ForecastStatus(points),f=status.forecast;
     if(f){forecastTitle=`${fmtShort(f.goalDate)} ごろ`;forecastNote='直近28日程度の14日平均トレンドから算出した参考値です。';}
     else if(status.reason)forecastNote=status.reason;
