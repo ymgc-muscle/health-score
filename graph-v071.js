@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH071_VERSION='0.6.44';
+const GRAPH071_VERSION='0.6.50';
 const G71_WD=['日','月','火','水','木','金','土'];
 const G71_FORECAST_COLOR='#3478f6';
 const G71_FORECAST_AVG_DAYS=14;
@@ -132,7 +132,7 @@ function g71ForecastModel(points){
 function g71ForecastPlotEnd(range,forecast){
   if(!forecast)return range.end;
   if(graph061Range==='all')return [range.end,forecast.goalDate].sort().at(-1);
-  const horizon=graph061Range==='14'?14:30;
+  const horizon=graph061Range==='7'?7:graph061Range==='14'?14:30;
   const horizonEnd=graphDateAdd(range.dataEnd,horizon);
   return forecast.goalDate<horizonEnd?forecast.goalDate:horizonEnd;
 }
