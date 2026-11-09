@@ -78,7 +78,7 @@ function graphAverageBetween(points,start,end){
 }
 function graphSelectedStats(points,range){
   const end=range.dataEnd;
-  const actual=points.filter(p=>p.d>=range.start&&p.d<=end),latest=points.filter(p=>p.d<=end).at(-1)||null;
+  const actual=points.filter(p=>p.d>=range.start&&p.d<=end),latest=actual.at(-1)||null;
   const avg7=graphAverageBetween(points,graphDateAdd(end,-6),end);
   const prev7=graphAverageBetween(points,graphDateAdd(end,-13),graphDateAdd(end,-7));
   return{actual,latest,avg7,prev7};
