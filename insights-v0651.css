@@ -1,0 +1,35 @@
+/* Health Score v0.6.51 — small wins and review panels */
+.hs51-home-extras{display:grid;gap:12px;padding:14px 0 24px}
+.hs51-card{padding:16px;background:#fff;border:1px solid #e7e9ed;border-radius:16px;box-shadow:0 3px 10px rgba(30,45,60,.04)}
+.hs51-card .title{font-size:16px;font-weight:800;margin:0 0 8px}
+.hs51-card p{margin:8px 0 0;font-size:13px;line-height:1.7;color:#4d5660}
+.hs51-home-score{font-size:25px;font-weight:900;color:#1c292d}
+.hs51-home-score span{font-size:12px;font-weight:700;color:#46765c;display:inline-block;margin-left:6px}
+.hs51-small-goal{background:#f5f8f7;border-radius:10px;padding:10px;margin-top:11px;font-size:13px;line-height:1.6}
+.hs51-small-goal b{display:block}
+.hs51-badges{display:flex;flex-wrap:wrap;gap:7px}
+.hs51-badges span{border-radius:999px;padding:7px 10px;color:#92621a;background:#fff2d5;border:1px solid #ffe0a6;font-size:12px;font-weight:750}
+.hs51-backup-alert{border-color:#f8cf83}
+.hs51-backup-alert button,.hs51-celebration button{border:0;border-radius:10px;background:#ff6a00;color:#fff;font-weight:800;padding:11px 15px;margin-top:10px;cursor:pointer}
+.hs51-review{display:grid;gap:10px;margin-top:12px}
+.hs51-review>div{background:#f6f9fa;border-radius:11px;padding:12px}
+.hs51-review b{font-size:13px;color:#2d3d46}
+.hs51-review p{font-size:13px;line-height:1.6;margin:5px 0 0}
+.hs51-delta{font-size:13px;font-weight:800;margin:8px 0 10px;color:#347a5e}
+.hs51-weight-trend{margin-top:14px}
+.hs51-weight-trend>b{display:block;margin-top:12px}
+.hs51-weight-trend p{font-size:13px;line-height:1.7;color:#52616a;margin-bottom:0}
+.hs51-weight-numbers{font-size:12px;line-height:1.6;margin-top:6px;color:#36444d}
+.hs51-rest{margin-top:10px}
+.hs51-rest .help,.hs51-backup .help{margin:7px 0 10px;font-size:12px;line-height:1.65}
+.hs51-rest select{display:block;width:100%;min-height:42px;padding:9px 12px;font-size:15px;border-radius:10px;border:1px solid #cfd8df;background:#fff;color:#25323c}
+.hs51-rest-state,.hs51-rest-home{background:#edf7f2;color:#286646;padding:9px 12px;border-radius:10px;font-size:13px;margin-top:9px;font-weight:750}
+.hs51-rest-home{margin:0}
+.hs51-backup .btn2{margin-top:8px}
+.hs51-celebration{position:fixed;inset:0;background:rgba(14,28,38,.65);z-index:10010;display:flex;align-items:center;justify-content:center;padding:20px}
+.hs51-celebration-inner{width:min(100%,420px);text-align:center;padding:34px 20px 28px;border-radius:22px;background:#fffaf0;box-shadow:0 20px 80px #10182055}
+.hs51-spark{font-size:38px;color:#ff9b20;letter-spacing:6px}
+.hs51-celebration-label{font-size:11px;letter-spacing:2px;font-weight:900;color:#a87725;margin:12px 0}
+.hs51-celebration h2{font-size:29px;margin:10px 0;color:#292b2f}
+.hs51-celebration p{font-size:14px;line-height:1.8;color:#53606a}
+@media (min-width:680px){.hs51-review{grid-template-columns:1fr 1fr}.hs51-home-extras{grid-template-columns:1fr 1fr}.hs51-home-extras .hs51-backup-alert{grid-column:1/-1}}

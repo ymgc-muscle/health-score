@@ -3,7 +3,7 @@
 weeklyStats=function(){
   const allDates=lastNDates(7),dates=allDates.filter(d=>!st.settings.startDate||d>=st.settings.startDate),periodDays=Math.max(1,dates.length),pairs=dates.map(d=>[d,st.entries[d]]),entries=pairs.filter(([,e])=>e&&entryHasData(e)),done=pairs.filter(([,e])=>e?.completed),scores=done.map(([,e])=>scoreForDay(e));
   const avgScore=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):null,achieved=done.filter(([,e])=>scoreForDay(e)>=70).length;
-  const cal=entries.map(([,e])=>effectiveCalories(e)).filter(Number.isFinite),prot=entries.map(([,e])=>+e.proteinActual).filter(Number.isFinite);
+  const cal=entries.map(([,e])=>effectiveCalories(e)).filter(Number.isFinite),prot=entries.map(([,e])=>e.proteinActual).filter(v=>v!=null&&v!==''&&Number.isFinite(+v)).map(Number);
   const stepDays=entries.filter(([,e])=>e.steps!=null&&+e.steps>=(+st.settings.stepTarget||10000)).length,proteinDays=entries.filter(([,e])=>e.proteinActual!=null&&+e.proteinActual>=(+st.settings.proteinTarget||100)*.9).length,buyDays=entries.filter(([,e])=>e.buying==='g').length;
   const weights7=entries.filter(([,e])=>e.weight!=null&&Number.isFinite(+e.weight)).map(([d,e])=>({d,w:+e.weight})),weightDelta=weights7.length>=2?weights7.at(-1).w-weights7[0].w:null;
   const weakness=ALL_KEYS.map(k=>{const seen=entries.filter(([,e])=>doneRating(k,e));if(!seen.length)return{k,rate:null};return{k,rate:seen.filter(([,e])=>fullPointAchieved(k,e)).length/seen.length}}).filter(x=>x.rate!=null).sort((a,b)=>a.rate-b.rate)[0]||null;
