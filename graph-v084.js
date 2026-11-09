@@ -1,6 +1,6 @@
 'use strict';
 
-const GRAPH084_VERSION='0.6.44';
+const GRAPH084_VERSION='0.6.50';
 
 function g84EmphasizeTrend(){
   const box=$('chartbox'),svg=box?.querySelector('svg');
@@ -42,7 +42,9 @@ function g84EmphasizeTrend(){
 
   const help=$('chartHelp');
   if(help&&help.innerHTML&&!help.innerHTML.includes('緑の太線＝7日移動平均')){
-    help.innerHTML=`<b>緑の太線＝7日移動平均（トレンド）</b>。青の破線＝14日移動平均のトレンドからの達成見込み、橙の細線・点＝日々の実測値、灰色の破線＝目標ライン。<br>${help.innerHTML}`;
+    const historical=typeof graph061Offset!=='undefined'&&graph061Offset>0&&graph061Range!=='all';
+    const forecastGuide=historical?'過去期間では達成見込み線は表示しません':'青の破線＝14日移動平均のトレンドからの達成見込み';
+    help.innerHTML=`<b>緑の太線＝7日移動平均（トレンド）</b>。${forecastGuide}、橙の細線・点＝日々の実測値、灰色の破線＝目標ライン。<br>${help.innerHTML}`;
   }
 }
 
@@ -69,7 +71,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (()=>{
   if(document.querySelector('script[data-ui-v086]'))return;
   const s=document.createElement('script');
-  s.src='ui-v086.js?v=102';
+  s.src='ui-v086.js?v=108';
   s.async=false;
   s.dataset.uiV086='1';
   document.head.appendChild(s);
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (()=>{
   if(document.querySelector('script[data-graph-v085]'))return;
   const s=document.createElement('script');
-  s.src='graph-v085.js?v=102';
+  s.src='graph-v085.js?v=103';
   s.async=false;
   s.dataset.graphV085='1';
   document.head.appendChild(s);
