@@ -2,9 +2,15 @@
 #chart .graph-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
 #chart .graph-toolbar .title{font-size:18px}
 #chart .graph-toolbar .sub{font-size:13px;margin-top:3px}
-#chart .graph-range{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#f0f2f4;border-radius:11px;padding:4px;min-width:190px}
+#chart .graph-range{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#f0f2f4;border-radius:11px;padding:4px;min-width:250px}
 #chart .graph-range button{border:0;background:transparent;border-radius:8px;padding:8px 9px;font-size:12px;font-weight:850;color:#6b7178}
 #chart .graph-range button.on{background:#fff;color:var(--o);box-shadow:0 1px 5px #0002}
+#chart .graph-period-nav{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:-2px 0 12px}
+#chart .graph-period-nav>div{text-align:center;display:grid;gap:2px}
+#chart .graph-period-nav>div b{font-size:13px;color:#34393e}
+#chart .graph-period-nav>div span{font-size:10.5px;color:#8a9095}
+#chart .graph-period-nav button{border:1px solid #dde1e4;background:#fff;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:850;color:#5d646a;min-width:88px}
+#chart .graph-period-nav button:disabled{opacity:.36}
 #chart .graph-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 #chart .graph-stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
 #chart .graph-stat .label{font-size:12px;color:var(--mut);line-height:1.35}
@@ -44,4 +50,11 @@
   #chart .graph-insights{grid-template-columns:1fr}
   #chart .graph-legend{font-size:13px}
   #chart .graph-foot{font-size:13px}
+}
+
+@media(max-width:520px){
+  #chart .graph-toolbar{display:block}
+  #chart .graph-range{margin-top:10px;min-width:0;width:100%}
+  #chart .graph-range button{padding:8px 5px;font-size:11px}
+  #chart .graph-period-nav button{min-width:82px;padding:8px 7px}
 }
