@@ -50,6 +50,7 @@ function v060Snapshot(e,score){
   };
 }
 completeDay=function(d){
+  flushDetailSave();
   const e=snapshotEntry(ent(d));
   if(!entryHasData(e)){toast('先に何か記録してください');return}
   const score=liveScore(e);
@@ -200,8 +201,15 @@ function watchServiceWorker(){
     if(reg.waiting)showUpdate(reg.waiting);
     reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(!nw)return;nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)showUpdate(nw)})});
   }).catch(()=>{});
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
-  $('applyUpdate').onclick=()=>{if(waitingWorker)waitingWorker.postMessage({type:'SKIP_WAITING'})};
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(reloading)return;
+    try{flushDetailSave();reloading=true;location.reload()}
+    catch{toast('入力を保存できなかったため更新を中断しました。空き容量を確認してください')}
+  });
+  $('applyUpdate').onclick=()=>{
+    try{flushDetailSave();if(waitingWorker)waitingWorker.postMessage({type:'SKIP_WAITING'})}
+    catch{toast('入力を保存できなかったため更新を中断しました')}
+  };
 }
 
 /* ---------- render wrappers ---------- */
@@ -220,3 +228,4 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('version').textContent=`Health Score v${V060}`;
   renderAutoCalorieNote(ent($('date')?.value||today()));renderHome();renderCalendar();renderWeekly();watchServiceWorker();
 });
+

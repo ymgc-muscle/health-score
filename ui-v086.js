@@ -1,6 +1,6 @@
 'use strict';
 
-const UI086_VERSION='0.6.51';
+const UI086_VERSION='0.6.52';
 const UI086_RATED_KEYS=['breakfast','lunch','buying','dinner','protein'];
 
 const U86_DEFAULT_STRENGTH_MENU=[
@@ -431,3 +431,4 @@ function u86Init(){
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',u86Init);else u86Init();
+

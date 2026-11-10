@@ -2,7 +2,7 @@
 
 // Health Score v0.6.51: additive quality-of-life features.
 // Keep the scoring weights, checkpoint algorithm and historical entries unchanged.
-const HS51_VERSION='0.6.51';
+const HS51_VERSION='0.6.52';
 const HS51_BACKUP_INTERVAL_DAYS=14;
 const HS51_REST_REASONS={
   illness:'体調不良',
@@ -72,7 +72,7 @@ weeklyStats=function(){return hs51Week(0)};
 function hs51CompareWeeks(current,previous){
   if(current.done.length>=3&&previous.done.length>=3&&current.avgScore!==null&&previous.avgScore!==null){
     const delta=current.avgScore-previous.avgScore;
-    if(delta>=2)return '確定スコアの週間平均が先週より'+delta+'点改善しました。';
+    if(delta>=2)return '確定スコアの週間平均が前7日より'+delta+'点改善しました。';
   }
   const behaviors=[
     {label:'買い食いのコントロール',good:current.buyDays,count:current.buyRecorded,oldGood:previous.buyDays,oldCount:previous.buyRecorded},
@@ -82,40 +82,43 @@ function hs51CompareWeeks(current,previous){
     return {...x,improvement:x.good/x.count-x.oldGood/x.oldCount};
   }).sort(function(a,b){return b.improvement-a.improvement});
   if(behaviors.length&&behaviors[0].improvement>=.15){
-    return behaviors[0].label+'が先週より改善しました。体重以外の積み重ねも成果です。';
+    return behaviors[0].label+'が前7日より改善しました。体重以外の積み重ねも成果です。';
   }
   if(current.done.length<3||previous.done.length<3){
-    return '前週比較は、各週3日以上の確定スコアが集まると表示します。';
+    return 'スコア比較は、各期間3日以上の確定スコアが集まると表示します。';
   }
   return '大きな変化がなくても、記録を続けることに意味があります。';
 }
 function hs51NextWeeklyGoal(w){
-  if(w.proteinRecorded>=3&&w.proteinDays/w.proteinRecorded<.75)return 'たんぱく質目標圏の日を、今週より1日増やす。';
-  if(w.buyRecorded>=3&&w.buyDays/w.buyRecorded<.75)return '買い食い◎の日を、今週より1日増やす。';
-  if(w.stepRecorded>=3&&w.stepDays/w.stepRecorded<.75)return '歩数目標達成の日を、今週より1日増やす。';
-  return '3食と無理のない記録を、来週も継続する。';
+  if(w.proteinRecorded>=3&&w.proteinDays/w.proteinRecorded<.75)return 'たんぱく質目標圏の日を、直近7日より1日増やす。';
+  if(w.buyRecorded>=3&&w.buyDays/w.buyRecorded<.75)return '買い食い◎の日を、直近7日より1日増やす。';
+  if(w.stepRecorded>=3&&w.stepDays/w.stepRecorded<.75)return '歩数目標達成の日を、直近7日より1日増やす。';
+  return '3食と無理のない記録を、これからも継続する。';
+}
+function hs51PeriodLabel(w){
+  return w.dates.length?fmtShort(w.dates[0])+'〜'+fmtShort(w.dates[w.dates.length-1]):'対象期間なし';
 }
 function hs51WeekDelta(w,previous){
   if(w.done.length<3||previous.done.length<3)return '比較データ不足';
-  return '先週比 '+hs51Signed(w.avgScore-previous.avgScore,0)+'点';
+  return '前7日比 '+hs51Signed(w.avgScore-previous.avgScore,0)+'点';
 }
 weeklyReviewHtml=function(){
   const w=hs51Week(0),prior=hs51Week(1);
   const rate=w.done.length?Math.round(w.achieved/w.done.length*100):null;
   const weak=w.weakness?LABELS[w.weakness.k]:'--';
-  return '<div class="weekly-head"><div><div class="sub">直近7日（開始日以降）</div><div class="weekly-rate">70点以上 '+(rate===null?'--':rate+'%')+'</div><div class="sub">確定済みの日を分母に使用</div></div>'+
+  return '<div class="weekly-head"><div><div class="sub">直近7日 '+hs51PeriodLabel(w)+'（開始日以降）</div><div class="weekly-rate">70点以上 '+(rate===null?'--':rate+'%')+'</div><div class="sub">確定済みの日を分母に使用</div></div>'+
     '<div class="weekly-score"><span>平均</span><b>'+(w.avgScore===null?'--':w.avgScore)+'</b></div></div>'+
     '<div class="hs51-delta">'+hs51WeekDelta(w,prior)+'</div>'+
     '<div class="kpi-grid weekly-kpis"><div class="kpi"><span class="sub">完了</span><b>'+w.done.length+'/'+w.periodDays+'</b></div>'+
     '<div class="kpi"><span class="sub">70点以上</span><b>'+w.achieved+'/'+w.done.length+'</b></div>'+
     '<div class="kpi"><span class="sub">体重変化</span><b>'+(w.weightDelta===null?'--':hs51Signed(w.weightDelta,1)+' kg')+'</b></div></div>'+
     '<div class="week-detail"><div><span>平均摂取</span><b>'+(w.calAvg===null?'--':w.calAvg.toLocaleString()+' kcal')+'</b></div>'+
-    '<div><span>平均P</span><b>'+(w.protAvg===null?'--':w.protAvg+' g')+'</b></div>'+
+    '<div><span>平均P（記録'+w.proteinCount+'日）</span><b>'+(w.protAvg===null?'--':w.protAvg+' g')+'</b></div>'+
     '<div><span>歩数目標</span><b>'+w.stepDays+'/'+w.periodDays+'日</b></div>'+
     '<div><span>P目標圏</span><b>'+w.proteinDays+'/'+w.periodDays+'日</b></div>'+
     '<div><span>買い食い◎</span><b>'+w.buyDays+'/'+w.periodDays+'日</b></div>'+
     '<div><span>改善余地</span><b>'+weak+'</b></div></div>'+
-    '<div class="hs51-review"><div><b>今週のよかったこと</b><p>'+hs51CompareWeeks(w,prior)+'</p></div>'+
+    '<div class="hs51-review"><div><b>直近7日のよかったこと</b><p>'+hs51CompareWeeks(w,prior)+'</p></div>'+
     '<div><b>次の小さな目標</b><p>'+hs51NextWeeklyGoal(w)+'</p></div></div>';
 };
 
@@ -149,14 +152,15 @@ function hs51RestControl(){
     return '<option value="'+k+'"'+(reason===k?' selected':'')+'>'+HS51_REST_REASONS[k]+'</option>';
   }).join('');
   card.innerHTML='<div class="title">今日の運動を計画休養にする</div>'+
-    '<div class="help">体調不良・出張・疲労回復などで運動を見送る日は、理由を選べます。通常の休養と同じ運動5点で、他の配点は変わりません。</div>'+
+    '<div class="help">体調不良・出張・疲労回復などで運動を見送る日は、理由を選べます。通常の休養と同じ運動'+maxFor('hiit')+'点で、他の配点は変わりません。</div>'+
     '<div class="field"><label for="hs51RestReason">理由（任意の変更）</label><select id="hs51RestReason" '+(locked?'disabled':'')+'>'+
     '<option value="">計画休養を設定しない</option>'+opts+'</select></div>'+
     (reason&&e.hiit==='rest'?'<div class="hs51-rest-state">計画休養：'+HS51_REST_REASONS[reason]+'（運動'+maxFor('hiit')+'点）</div>':'')+
     (locked?'<div class="help">変更するには「記録を再開」してください。</div>':'');
   $('hs51RestReason').onchange=function(){
     const value=this.value,day=$('date').value;
-    const current=snapshotEntry(ent(day));
+    flushDetailSave();
+    const current=collectDetail();
     if(current.completed)return;
     if(value&&HS51_REST_REASONS[value]){
       current.specialRestReason=value;
@@ -264,6 +268,7 @@ function hs51WrapBackupExport(){
   const original=b.onclick;
   b.onclick=function(ev){
     // The timestamp is included in the regular JSON backup.
+    flushDetailSave();
     st.settings.lastBackupExportedAt=new Date().toISOString();
     saveState();
     if(typeof original==='function')original.call(b,ev);
@@ -283,13 +288,18 @@ function hs51Milestones(){
     {id:'snack5',label:'買い食い◎ 週5日',earned:w.buyDays>=5}
   ];
 }
-function hs51CelebrateMilestone(award){
-  if($('hs51Celebration'))return;
+function hs51CelebrateMilestone(awards){
+  const existing=$('hs51Celebration');
+  if(existing){
+    const labels=existing.querySelector('h2');
+    labels.textContent+=' / '+awards.map(function(x){return x.label}).join(' / ');
+    return;
+  }
   const overlay=document.createElement('div');
   overlay.id='hs51Celebration';
   overlay.className='hs51-celebration';
   overlay.innerHTML='<div class="hs51-celebration-inner"><div class="hs51-spark">✦ ✧ ✦</div>'+
-    '<div class="hs51-celebration-label">SMALL WIN UNLOCKED</div><h2>'+award.label+'</h2>'+
+    '<div class="hs51-celebration-label">SMALL WIN UNLOCKED</div><h2>'+awards.map(function(x){return x.label}).join(' / ')+'</h2>'+
     '<p>これは立派な積み重ねです！ 次の小さな一歩も、自分のペースで。</p>'+
     '<button type="button" id="hs51CelebrationClose">やった！</button></div>';
   document.body.appendChild(overlay);
@@ -310,7 +320,7 @@ function hs51UpdateAwards(){
   if(newly.length){
     st.settings.hs51AwardedIds=[...new Set(seen.concat(newly.map(function(x){return x.id})))];
     saveState();
-    hs51CelebrateMilestone(newly[0]);
+    hs51CelebrateMilestone(newly);
   }
 }
 function hs51RenderHomeExtras(){
@@ -330,6 +340,7 @@ function hs51RenderHomeExtras(){
     host.appendChild(box);
   }
   box.innerHTML='<section class="hs51-card"><div class="title">週間の振り返り</div>'+
+    '<div class="sub">直近7日 '+hs51PeriodLabel(current)+' / 前7日 '+hs51PeriodLabel(prior)+'</div>'+
     '<div class="hs51-home-score">平均 '+(current.avgScore===null?'--':current.avgScore+'点')+
     ' <span>'+hs51WeekDelta(current,prior)+'</span></div><p>'+hs51CompareWeeks(current,prior)+'</p>'+
     '<div class="hs51-small-goal"><b>次の小さな目標</b> '+hs51NextWeeklyGoal(current)+'</div></section>'+
@@ -371,3 +382,4 @@ function hs51Init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hs51Init);
 else hs51Init();
+

@@ -1,15 +1,14 @@
-// Health Score PWA v0.6.51 — reflections, rest and backup prompts
-const CACHE='health-score-v0.6.51-insights1';
-const ASSETS=['./','./index.html','./insights-v0651.js?v=651','./insights-v0651.css?v=651','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=062','./graph-v071.css?v=071','./graph-v084.css?v=090','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./ui-v074.css?v=074','./ui-v082.css?v=082','./waist-v083.css?v=083','./waist-trend-v088.css?v=088','./checkpoint-v087.css?v=088','./notifications-v078.css?v=081','./app.js?v=051','./enhancements-v060.js?v=060','./weekly-v060-fix.js?v=651','./graph-v061.js?v=064','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v070.js?v=072','./graph-v071.js?v=094','./graph-v072.js?v=072','./graph-v073.js?v=073','./ui-v074.js?v=081','./ui-v082.js?v=083','./waist-v083.js?v=084','./graph-v084.js?v=103','./graph-v085.js?v=103','./ui-v086.js?v=109','./checkpoint-v087.js?v=090','./waist-trend-v088.js?v=088','./graph-v075.js?v=085','./notifications-v079.js?v=085','./notification-route-v081.js?v=081','./manifest.webmanifest','./icon.svg?v=6'];
+// Health Score PWA v0.6.52 — reflections, rest and backup prompts
+const CACHE='health-score-v0.6.52-insights2';
+const ASSETS=['./','./index.html','./insights-v0651.js?v=652','./insights-v0651.css?v=651','./styles.css?v=050','./enhancements-v060.css?v=060','./graph-v061.css?v=062','./graph-v071.css?v=071','./graph-v084.css?v=090','./home-v062.css?v=062','./ui-v063.css?v=063','./ui-v064.css?v=064','./ui-v065.css?v=065','./ui-v067.css?v=067','./ui-v074.css?v=074','./ui-v082.css?v=082','./waist-v083.css?v=083','./waist-trend-v088.css?v=088','./checkpoint-v087.css?v=088','./notifications-v078.css?v=081','./app.js?v=052','./enhancements-v060.js?v=652','./weekly-v060-fix.js?v=651','./graph-v061.js?v=064','./home-v062.js?v=062','./ui-v063.js?v=063','./ui-v064.js?v=065','./ui-v067.js?v=067','./ui-v070.js?v=072','./graph-v071.js?v=094','./graph-v072.js?v=072','./graph-v073.js?v=073','./ui-v074.js?v=081','./ui-v082.js?v=083','./waist-v083.js?v=084','./graph-v084.js?v=103','./graph-v085.js?v=103','./ui-v086.js?v=110','./checkpoint-v087.js?v=090','./waist-trend-v088.js?v=088','./graph-v075.js?v=085','./notifications-v079.js?v=085','./notification-route-v081.js?v=081','./manifest.webmanifest?v=6','./icon.svg?v=6'];
 
 self.addEventListener('install',event=>{
-  self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
 });
 
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('message',event=>{
@@ -65,3 +64,4 @@ self.addEventListener('fetch',event=>{
     }
   })());
 });
+

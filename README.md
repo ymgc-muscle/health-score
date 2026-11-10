@@ -2,7 +2,7 @@
 
 日々の体重・食事・運動を記録し、100点満点のスコアで健康行動を振り返るための個人用PWAです。
 
-**Current version: v0.6.51**
+**Current version: v0.6.52**
 
 ## 主な機能
 
@@ -42,3 +42,4 @@ Push通知にはFirebase Cloud MessagingとGitHub Actionsを利用していま�
 ## Push通知の設定
 
 Push通知のセットアップに関するメモは [PUSH_SETUP.md](PUSH_SETUP.md) にあります。
+

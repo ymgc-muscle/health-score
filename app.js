@@ -27,6 +27,7 @@ let st=loadState();
 let calMonth=new Date(`${today()}T00:00:00`);
 let activeView='home';
 let autosaveTimer=null;
+let pendingDetailSave=null;
 
 function loadState(){
   let raw=null;
@@ -209,7 +210,7 @@ function renderQuick(e){
 }
 function suggestHtml(k,e){const s=mealSuggest(k,e);if(!s)return'';if(e[k]===s)return`<div class="suggest"><span>推奨 ${ratingLabel(s)} を反映済み</span></div>`;return`<div class="suggest"><span>実績からの推奨：<b>${ratingLabel(s)}</b></span><button data-apply-suggest="${k}" data-v="${s}">反映</button></div>`}
 function quickNumericSave(k,v){const e=snapshotEntry(ent(today()));e[k]=v===''?null:+v;if(k==='proteinActual'&&!e.protein){}setEntry(today(),e);scheduleHomeRefresh()}
-function quickRatingSave(k,v){const e=snapshotEntry(ent(today()));e[k]=v;setEntry(today(),e);renderHome();renderCalendar();renderWeekly()}
+function quickRatingSave(k,v){const e=snapshotEntry(ent(today()));e[k]=v;if(k==='hiit'&&v!=='rest')delete e.specialRestReason;setEntry(today(),e);renderHome();renderCalendar();renderWeekly()}
 let homeRefreshTimer=null;function scheduleHomeRefresh(){clearTimeout(homeRefreshTimer);homeRefreshTimer=setTimeout(()=>{renderHome();renderCalendar();renderWeekly()},220)}
 function renderHomeSummary(e){
   const box=$('todaySummary');box.innerHTML=ALL_KEYS.map(k=>{let status='未入力';if(k==='weight'&&e.weight!=null)status='◎';else if(k==='steps'&&e.steps!=null)status=e.steps>=st.settings.stepTarget?'◎':e.steps>=st.settings.stepTarget*.8?'○':e.steps>=st.settings.stepTarget*.6?'△':'×';else if(k==='hiit'&&e.hiit)status=e.hiit==='missed'?'×':e.hiit==='rest'?'休養':'◎';else if(e[k])status=ratingLabel(e[k]);return`<div class="row"><div class="rowhead"><span class="title">${LABELS[k]}</span><span><b>${status}</b>　${earnedFor(k,e)}/${maxFor(k)}点</span></div></div>`}).join('')}
@@ -225,6 +226,7 @@ function collectDetail(){
   return e;
 }
 function fillDetail(d=$('date').value){
+  flushDetailSave();
   const e=ent(d);$('weight').value=e.weight??'';$('steps').value=e.steps??'';$('caloriesActual').value=e.caloriesActual??'';$('proteinActual').value=e.proteinActual??'';$('memo').value=e.memo??'';
   buildRated(e);
   $('weightCriteria').innerHTML=criteria('weight');$('stepsCriteria').innerHTML=criteria('steps');$('hiitCriteria').innerHTML=criteria('hiit');
@@ -244,7 +246,26 @@ function updateDetailSuggestions(){
 }
 function updateLiveScore(){const e=collectDetail();$('liveScore').textContent=e.completed&&e.finalScore!=null&&Number.isFinite(+e.finalScore)?e.finalScore:liveScore(e);$('liveScoreLabel').textContent=e.completed?'確定スコア':'入力中スコア'}
 function scheduleDetailSave(delay=220){
-  const d=$('date').value,e=collectDetail();setAutosave('保存中…','saving');clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>{setEntry(d,e);setAutosave('保存済み ✓','ok');updateDetailSuggestions();updateLiveScore();renderHome();renderCalendar();renderWeekly();renderCompleteCard('input',e)},delay)
+  if(!stageDetailSave())return;
+  setAutosave('保存中…','saving');
+  autosaveTimer=setTimeout(()=>{flushDetailSave();updateDetailSuggestions();updateLiveScore();renderHome();renderCalendar();renderWeekly();renderCompleteCard('input',ent($('date').value))},delay);
+}
+function flushDetailSave(){
+  clearTimeout(autosaveTimer);autosaveTimer=null;
+  if(!pendingDetailSave)return;
+  const pending=pendingDetailSave;
+  // Retain the draft if localStorage fails; update callers must not reload.
+  if(!ent(pending.d).completed)setEntry(pending.d,pending.e);
+  pendingDetailSave=null;
+  setAutosave('保存済み ✓','ok');
+}
+function stageDetailSave(){
+  const d=$('date').value;
+  if(ent(d).completed)return false;
+  if(pendingDetailSave&&pendingDetailSave.d!==d)flushDetailSave();
+  clearTimeout(autosaveTimer);autosaveTimer=null;
+  pendingDetailSave={d,e:collectDetail()};
+  return true;
 }
 function setAutosave(txt,cls){const el=$('autosave');el.textContent=txt;el.className=`autosave ${cls}`}
 function scrollToField(k){const sel=k==='weight'?'[data-field="weight"]':k==='steps'?'[data-field="steps"]':k==='hiit'?'[data-field="hiit"]':`[data-field="${k}"]`;const el=document.querySelector(`#input ${sel}`);if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.classList?.add('open')}}
@@ -325,7 +346,7 @@ function bindEvents(){
   $('prevMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCalendar()};$('nextMonth').onclick=()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCalendar()};
   document.addEventListener('click',ev=>{const acc=ev.target.closest('.acc-head');if(acc){acc.closest('.ratecard').classList.toggle('open');return}const btn=ev.target.closest('#input .seg button');if(btn){const seg=btn.parentElement;seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');updateLiveScore();scheduleDetailSave(80);return}const sug=ev.target.closest('[data-detail-suggest]');if(sug){const seg=document.querySelector(`#rated [data-k="${sug.dataset.detailSuggest}"]`);seg?.querySelector(`[data-v="${sug.dataset.v}"]`)?.click()}});
   ['steps','caloriesActual','proteinActual','memo'].forEach(id=>$(id).addEventListener('input',()=>{updateLiveScore();scheduleDetailSave(id==='memo'?450:220)}));
-  $('weight').addEventListener('input',()=>{updateLiveScore();setAutosave('入力中…','saving')});
+  $('weight').addEventListener('input',()=>{updateLiveScore();stageDetailSave();setAutosave('入力中…','saving')});
   const commitDetailWeight=()=>scheduleDetailSave(0);
   $('weight').addEventListener('change',commitDetailWeight);
   $('weight').addEventListener('blur',commitDetailWeight);
@@ -333,10 +354,11 @@ function bindEvents(){
   $('hiitSeg').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{$('hiitSeg').querySelectorAll('button').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');updateLiveScore();scheduleDetailSave(80)});
   ['setCalorieTarget','setStepTarget','setProteinTarget'].forEach(id=>$(id).oninput=drawSettingsGuide);Object.keys(DEFAULT_WEIGHTS).forEach(k=>$(`score_${k}`).oninput=drawScoreTotal);$('saveSettings').onclick=saveSettings;
   $('resetWeights').onclick=()=>{Object.entries(DEFAULT_WEIGHTS).forEach(([k,v])=>$(`score_${k}`).value=v);drawScoreTotal();toast('初期配点をセットしました。保存で確定します')};
-  $('export').onclick=()=>{const blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`health-score-backup-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
-  $('import').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x||typeof x!=='object'||!x.entries)throw Error();st=x;st.entries=st.entries||{};st.settings={...DEFAULT_SETTINGS,...(st.settings||{})};st.settings.scoreWeights={...DEFAULT_WEIGHTS,...(st.settings.scoreWeights||{})};saveState();migrateCompletedHistory();fillSettings();fillDetail(today());renderAll();toast('バックアップを復元しました')}catch{toast('読み込みに失敗しました')}ev.target.value=''};
+  $('export').onclick=()=>{flushDetailSave();const blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`health-score-backup-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
+  $('import').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!x||typeof x!=='object'||!x.entries)throw Error();flushDetailSave();st=x;st.entries=st.entries||{};st.settings={...DEFAULT_SETTINGS,...(st.settings||{})};st.settings.scoreWeights={...DEFAULT_WEIGHTS,...(st.settings.scoreWeights||{})};saveState();migrateCompletedHistory();fillSettings();fillDetail(today());renderAll();toast('バックアップを復元しました')}catch{toast('読み込みに失敗しました')}ev.target.value=''};
 }
 
 function init(){migrateCompletedHistory();bindEvents();fillDetail(today());fillSettings();renderAll();$('version').textContent=`Health Score v${VERSION}`;showOnboarding();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js')}
 
 document.addEventListener('DOMContentLoaded',init);
+
